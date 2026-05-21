@@ -1,14 +1,16 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useLanguage } from '@/lib/language-context'
-import { useTheme } from 'next-themes'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { QRCodeSVG } from 'qrcode.react'
 import {
   Sprout, MessageSquare, Cloud, TrendingUp, GraduationCap,
-  ArrowRight, ChevronRight, Users, Zap, Shield,
+  ArrowRight, ChevronRight, Users, Zap, Smartphone, Apple,
 } from 'lucide-react'
+import { LandingWalkthroughModal } from '@/components/tutorial/landing-walkthrough-modal'
 
 const FEATURES = [
   { icon: MessageSquare, color: '#2a5c3f', bgLight: '#edf4ef', bgDark: '#1a2d20',
@@ -53,25 +55,41 @@ const STATS = [
   { sw: 'Mazao Yanayosaidia', en: 'Crops Supported', value: '5+' },
 ]
 
-const fade = (delay = 0) => ({
-  initial: { opacity: 0, y: 16 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
-})
-
 export default function LandingPage() {
   const { lang, setLang, t } = useLanguage()
+  const reduced = useReducedMotion()
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
 
   const sw = lang === 'sw'
+
+  const fade = (delay = 0) => reduced ? {} : ({
+    initial: { opacity: 0, y: 16 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  })
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
 
       {/* ── Navbar ─────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 border-b backdrop-blur-md"
-        style={{ backgroundColor: 'color-mix(in srgb, var(--surface) 85%, transparent)', borderColor: 'var(--border)' }}>
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <nav
+        className="sticky top-0 z-40 border-b backdrop-blur-md transition-all duration-300"
+        style={{
+          backgroundColor: 'color-mix(in srgb, var(--surface) 85%, transparent)',
+          borderColor: 'var(--border)',
+          height: scrolled ? '44px' : '56px',
+        }}
+      >
+        <div
+          className="max-w-5xl mx-auto px-4 flex items-center justify-between h-full transition-all duration-300"
+        >
           <div className="flex items-center gap-2">
             <div className="rounded-lg p-1.5" style={{ backgroundColor: 'var(--primary)' }}>
               <Sprout className="h-4 w-4 text-white" />
@@ -79,6 +97,7 @@ export default function LandingPage() {
             <span className="font-bold text-base" style={{ color: 'var(--text)' }}>Kilimo AI</span>
           </div>
           <div className="flex items-center gap-2">
+            <LandingWalkthroughModal />
             <button
               onClick={() => setLang(sw ? 'en' : 'sw')}
               className="text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors"
@@ -147,8 +166,53 @@ export default function LandingPage() {
             </a>
           </motion.div>
 
+          {/* Floating app preview illustration */}
+          <motion.div
+            className="mt-10 mx-auto w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden border text-left"
+            style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+            {...fade(0.22)}
+            animate={reduced ? {} : { y: [0, -8, 0] }}
+            transition={reduced ? {} : { duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            {/* Mini header */}
+            <div className="px-3 py-2 border-b flex items-center gap-2" style={{ borderColor: 'var(--border)' }}>
+              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: 'var(--primary)' }}>
+                <Sprout className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Kilimo AI</span>
+              <div className="ml-auto flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sw ? 'Mtandaoni' : 'Online'}</span>
+              </div>
+            </div>
+            {/* Chat bubbles */}
+            <div className="px-3 py-3 space-y-2">
+              <div className="flex gap-2">
+                <div className="w-5 h-5 rounded-full shrink-0" style={{ backgroundColor: 'var(--primary)' }} />
+                <div className="rounded-xl rounded-tl-sm px-2.5 py-1.5 text-[10px] leading-relaxed"
+                  style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)' }}>
+                  {sw ? 'Habari! Ninaweza kukusaidia na kilimo leo?' : 'Hi! How can I help with your farm today?'}
+                </div>
+              </div>
+              <div className="flex gap-2 flex-row-reverse">
+                <div className="w-5 h-5 rounded-full shrink-0 bg-emerald-600" />
+                <div className="rounded-xl rounded-tr-sm px-2.5 py-1.5 text-[10px]"
+                  style={{ backgroundColor: 'var(--primary)', color: 'white' }}>
+                  {sw ? 'Mahindi yangu yanaonekana na ugonjwa' : 'My maize looks diseased'}
+                </div>
+              </div>
+              {/* Price ticker */}
+              <div className="mt-1 flex items-center gap-1.5 px-1 py-1 rounded-lg" style={{ backgroundColor: 'var(--surface-2)' }}>
+                <TrendingUp className="h-3 w-3 shrink-0" style={{ color: 'var(--primary)' }} />
+                <span className="text-[9px] truncate" style={{ color: 'var(--text-muted)' }}>
+                  Mahindi TZS 650/kg · Mchele TZS 1,800/kg
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Stats row */}
-          <motion.div className="flex justify-center gap-8 mt-12" {...fade(0.24)}>
+          <motion.div className="flex justify-center gap-8 mt-10" {...fade(0.3)}>
             {STATS.map((s, i) => (
               <div key={i} className="text-center">
                 <div className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>{s.value}</div>
@@ -180,7 +244,7 @@ export default function LandingPage() {
                   className="rounded-2xl p-5 border"
                   style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
                   {...fade(i * 0.07)}
-                  whileHover={{ y: -3, boxShadow: '0 8px 28px rgba(0,0,0,0.1)' }}
+                  whileHover={reduced ? {} : { y: -3, boxShadow: '0 8px 28px rgba(0,0,0,0.1)' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -235,6 +299,86 @@ export default function LandingPage() {
                 </motion.div>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Download / QR ──────────────────────────────────────── */}
+      <section className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="max-w-5xl mx-auto px-4">
+          <motion.div className="text-center mb-10" {...fade()}>
+            <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              {sw ? 'Pakua kwenye Simu Yako' : 'Download to Your Phone'}
+            </h2>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+              {sw
+                ? 'Piga picha QR code hii kupata Kilimo AI moja kwa moja kwenye simu yako'
+                : 'Scan this QR code to get Kilimo AI directly on your phone'}
+            </p>
+          </motion.div>
+
+          <div className="flex flex-col md:flex-row items-center gap-10 justify-center">
+            {/* QR code */}
+            <motion.div
+              className="shrink-0 rounded-2xl p-4 bg-white shadow-xl"
+              {...fade(0.05)}
+              whileHover={reduced ? {} : { scale: 1.03 }}
+              transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+            >
+              <QRCodeSVG
+                value={process.env.NEXT_PUBLIC_APP_URL ?? 'https://yourapp.vercel.app'}
+                size={160}
+                bgColor="#ffffff"
+                fgColor="#2d5a27"
+                level="H"
+                includeMargin={false}
+              />
+            </motion.div>
+
+            {/* Install instructions */}
+            <motion.div className="max-w-xs w-full space-y-4" {...fade(0.1)}>
+              <div
+                className="flex gap-3 p-4 rounded-xl border"
+                style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+              >
+                <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(42,92,63,0.12)' }}>
+                  <Smartphone className="h-5 w-5" style={{ color: 'var(--primary)' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Android</p>
+                  <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    {sw
+                      ? 'Fungua Chrome → menyu (⋮) → "Ongeza kwenye skrini ya nyumbani"'
+                      : 'Open Chrome → menu (⋮) → "Add to Home screen"'}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="flex gap-3 p-4 rounded-xl border"
+                style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+              >
+                <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(42,92,63,0.12)' }}>
+                  <Apple className="h-5 w-5" style={{ color: 'var(--primary)' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>iPhone / iPad</p>
+                  <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    {sw
+                      ? 'Fungua Safari → ikoni ya kushiriki (↑) → "Ongeza kwenye Skrini ya Nyumbani"'
+                      : 'Open Safari → share icon (↑) → "Add to Home Screen"'}
+                  </p>
+                </div>
+              </div>
+
+              <Link href="/qr"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors hover:bg-[var(--surface-2)]"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                {sw ? 'Chapisha QR Code' : 'Print QR Code'}
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>

@@ -1,49 +1,81 @@
 -- ============================================================
--- Kilimo App — Database Schema
--- Run in Supabase SQL Editor (Settings > SQL Editor)
+-- KILIMO APP — COMPLETE DATABASE SETUP
+-- Run once in Supabase SQL Editor (Settings → SQL Editor)
+-- Safe to re-run: uses IF NOT EXISTS / DROP IF EXISTS / ADD COLUMN IF NOT EXISTS
 -- ============================================================
 
--- Profiles (extends auth.users)
+
+-- ── 1. PROFILES ─────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id          uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  role        text NOT NULL DEFAULT 'farmer'
-                CHECK (role IN ('farmer', 'admin', 'super_admin')),
-  full_name   text,
-  location    text,
-  email       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id                  uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role                text NOT NULL DEFAULT 'farmer'
+                        CHECK (role IN ('farmer', 'admin', 'super_admin')),
+  full_name           text,
+  email               text,
+  location            text,
+  phone_number        text,
+  farm_location       text,
+  bio                 text,
+  preferred_language  text DEFAULT 'sw',
+  avatar_url          text,
+  created_at          timestamptz NOT NULL DEFAULT now()
 );
+
+-- Add columns that may be missing if the table was created manually / partially
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS email              text,
+  ADD COLUMN IF NOT EXISTS location           text,
+  ADD COLUMN IF NOT EXISTS phone_number       text,
+  ADD COLUMN IF NOT EXISTS farm_location      text,
+  ADD COLUMN IF NOT EXISTS bio                text,
+  ADD COLUMN IF NOT EXISTS preferred_language text DEFAULT 'sw',
+  ADD COLUMN IF NOT EXISTS avatar_url         text;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Farmers can read/update their own profile
-CREATE POLICY "profiles_select_own" ON public.profiles
-  FOR SELECT USING (auth.uid() = id);
+-- Drop every policy that may exist (old recursive ones included)
+DROP POLICY IF EXISTS "profiles_select_own"         ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own"         ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own"         ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_admin"       ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_super_admin" ON public.profiles;
 
-CREATE POLICY "profiles_update_own" ON public.profiles
-  FOR UPDATE USING (auth.uid() = id);
+-- Helper function: reads role without touching RLS (SECURITY DEFINER bypasses it)
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid();
+$$;
 
--- Admins can read all profiles
-CREATE POLICY "profiles_select_admin" ON public.profiles
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+-- Fresh, recursion-free policies
+CREATE POLICY "profiles_select_own"
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
 
--- Super admins can update any profile (role changes)
-CREATE POLICY "profiles_update_super_admin" ON public.profiles
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'super_admin'
-    )
-  );
+CREATE POLICY "profiles_insert_own"
+  ON public.profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
 
--- ============================================================
--- Market Prices
--- ============================================================
+CREATE POLICY "profiles_update_own"
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+CREATE POLICY "profiles_select_admin"
+  ON public.profiles FOR SELECT
+  USING (get_my_role() IN ('admin', 'super_admin'));
+
+CREATE POLICY "profiles_update_super_admin"
+  ON public.profiles FOR UPDATE
+  USING (get_my_role() = 'super_admin');
+
+
+-- ── 2. MARKET PRICES ────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS public.market_prices (
   id               bigserial PRIMARY KEY,
   crop_name        text NOT NULL,
@@ -55,22 +87,21 @@ CREATE TABLE IF NOT EXISTS public.market_prices (
 
 ALTER TABLE public.market_prices ENABLE ROW LEVEL SECURITY;
 
--- All authenticated users can read
-CREATE POLICY "market_prices_select" ON public.market_prices
-  FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "market_prices_select" ON public.market_prices;
+DROP POLICY IF EXISTS "market_prices_write"  ON public.market_prices;
 
--- Admins can insert/update/delete
-CREATE POLICY "market_prices_write" ON public.market_prices
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "market_prices_select"
+  ON public.market_prices FOR SELECT
+  USING (auth.role() = 'authenticated');
 
--- ============================================================
--- Educational Content
--- ============================================================
+CREATE POLICY "market_prices_write"
+  ON public.market_prices FOR ALL
+  USING     (get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
+
+
+-- ── 3. EDUCATIONAL CONTENT ──────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS public.educational_content (
   id          bigserial PRIMARY KEY,
   title       text NOT NULL,
@@ -84,20 +115,21 @@ CREATE TABLE IF NOT EXISTS public.educational_content (
 
 ALTER TABLE public.educational_content ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "content_select" ON public.educational_content
-  FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "content_select" ON public.educational_content;
+DROP POLICY IF EXISTS "content_write"  ON public.educational_content;
 
-CREATE POLICY "content_write" ON public.educational_content
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "content_select"
+  ON public.educational_content FOR SELECT
+  USING (auth.role() = 'authenticated');
 
--- ============================================================
--- Crop Info
--- ============================================================
+CREATE POLICY "content_write"
+  ON public.educational_content FOR ALL
+  USING     (get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
+
+
+-- ── 4. CROP INFO ────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS public.crop_info (
   id           bigserial PRIMARY KEY,
   name         text NOT NULL,
@@ -119,132 +151,122 @@ CREATE TABLE IF NOT EXISTS public.crop_info (
 
 ALTER TABLE public.crop_info ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "crop_info_select" ON public.crop_info
-  FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "crop_info_select" ON public.crop_info;
+DROP POLICY IF EXISTS "crop_info_write"  ON public.crop_info;
 
-CREATE POLICY "crop_info_write" ON public.crop_info
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+CREATE POLICY "crop_info_select"
+  ON public.crop_info FOR SELECT
+  USING (auth.role() = 'authenticated');
 
--- ============================================================
--- AI Conversations
--- ============================================================
-CREATE TABLE IF NOT EXISTS public.ai_conversations (
+CREATE POLICY "crop_info_write"
+  ON public.crop_info FOR ALL
+  USING     (get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
+
+
+-- ── 5. AI CONVERSATIONS ─────────────────────────────────────────────────────
+-- One row per user; the full message array is stored as JSONB.
+-- Drop and recreate because the old schema had a different shape (per-message rows).
+
+DROP TABLE IF EXISTS public.ai_conversations;
+
+CREATE TABLE public.ai_conversations (
   id         bigserial PRIMARY KEY,
-  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role       text NOT NULL CHECK (role IN ('user', 'assistant')),
-  content    text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
+  user_id    uuid NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  messages   jsonb NOT NULL DEFAULT '[]',
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "conversations_own" ON public.ai_conversations
-  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "conversations_own"
+  ON public.ai_conversations FOR ALL
+  USING     (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- ============================================================
--- Seed: Market Prices
--- ============================================================
-INSERT INTO public.market_prices (crop_name, price_per_kg, market_location, recorded_date) VALUES
+
+-- ── 6. STORAGE — AVATARS BUCKET ─────────────────────────────────────────────
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "avatars_public_read" ON storage.objects;
+DROP POLICY IF EXISTS "avatars_upload_own"  ON storage.objects;
+DROP POLICY IF EXISTS "avatars_update_own"  ON storage.objects;
+DROP POLICY IF EXISTS "avatars_delete_own"  ON storage.objects;
+
+-- Anyone can view avatars (they're public)
+CREATE POLICY "avatars_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'avatars');
+
+-- Each user can only upload into their own folder  /{user_id}/avatar.jpg
+CREATE POLICY "avatars_upload_own"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "avatars_update_own"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "avatars_delete_own"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+
+-- ── 7. SEED DATA (skipped if tables already have rows) ──────────────────────
+
+INSERT INTO public.market_prices (crop_name, price_per_kg, market_location, recorded_date)
+SELECT * FROM (VALUES
   ('Mahindi',   650,  'Dar es Salaam', CURRENT_DATE),
-  ('Mahindi',   580,  'Dodoma',        CURRENT_DATE),
-  ('Mchele',   1800, 'Dar es Salaam', CURRENT_DATE),
-  ('Mchele',   1650, 'Arusha',        CURRENT_DATE),
-  ('Nyanya',    900,  'Dar es Salaam', CURRENT_DATE),
-  ('Nyanya',    750,  'Mbeya',         CURRENT_DATE),
-  ('Maharage', 2200, 'Dar es Salaam', CURRENT_DATE),
-  ('Maharage', 1950, 'Mwanza',        CURRENT_DATE),
-  ('Vitunguu',  800,  'Morogoro',      CURRENT_DATE),
-  ('Karoti',    600,  'Arusha',        CURRENT_DATE)
-ON CONFLICT DO NOTHING;
+  ('Mahindi',   600,  'Dodoma',        CURRENT_DATE),
+  ('Mahindi',   580,  'Mbeya',         CURRENT_DATE),
+  ('Mahindi',   620,  'Arusha',        CURRENT_DATE),
+  ('Mchele',   1800,  'Dar es Salaam', CURRENT_DATE),
+  ('Mchele',   1650,  'Dodoma',        CURRENT_DATE),
+  ('Mchele',   1700,  'Arusha',        CURRENT_DATE),
+  ('Mchele',   1600,  'Mbeya',         CURRENT_DATE),
+  ('Nyanya',    800,  'Dar es Salaam', CURRENT_DATE),
+  ('Nyanya',    650,  'Dodoma',        CURRENT_DATE),
+  ('Nyanya',    750,  'Arusha',        CURRENT_DATE),
+  ('Nyanya',    600,  'Mbeya',         CURRENT_DATE),
+  ('Maharage', 1400,  'Dar es Salaam', CURRENT_DATE),
+  ('Maharage', 1300,  'Dodoma',        CURRENT_DATE),
+  ('Maharage', 1350,  'Arusha',        CURRENT_DATE),
+  ('Maharage', 1250,  'Mbeya',         CURRENT_DATE),
+  ('Vitunguu',  500,  'Dar es Salaam', CURRENT_DATE),
+  ('Vitunguu',  450,  'Dodoma',        CURRENT_DATE),
+  ('Vitunguu',  480,  'Arusha',        CURRENT_DATE),
+  ('Vitunguu',  420,  'Mbeya',         CURRENT_DATE)
+) AS v(crop_name, price_per_kg, market_location, recorded_date)
+WHERE NOT EXISTS (SELECT 1 FROM public.market_prices LIMIT 1);
 
--- ============================================================
--- Seed: Educational Content
--- ============================================================
-INSERT INTO public.educational_content (title, description, video_url, category, crop_name, language) VALUES
-  ('Jinsi ya Kupanda Mahindi', 'Mwongozo wa kupanda mahindi kwa msimu wa mvua', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'kupanda', 'Mahindi', 'Kiswahili'),
-  ('Umwagiliaji wa Nyanya', 'Njia bora za kumwagilia nyanya', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'umwagiliaji', 'Nyanya', 'Kiswahili'),
-  ('Magonjwa ya Mahindi', 'Jinsi ya kuzuia na kutibu magonjwa ya mahindi', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'magonjwa', 'Mahindi', 'Kiswahili'),
-  ('Maize Planting Guide', 'Complete guide for planting maize in Tanzania', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'kupanda', 'Mahindi', 'English'),
-  ('Making Organic Compost', 'How to make compost from farm waste', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'mboji', '', 'English')
-ON CONFLICT DO NOTHING;
-
--- ============================================================
--- Seed: Crop Info
--- ============================================================
-INSERT INTO public.crop_info (name, name_en, emoji, season_sw, season_en, water_sw, water_en, temperature, yield_sw, yield_en, diseases, tips_sw, tips_en, accent_color) VALUES
-  (
-    'Mahindi', 'Maize', '🌽',
-    'Msimu wa mvua (Machi–Mei, Oktoba–Desemba)',
-    'Rainy season (March–May, October–December)',
-    'Wastani — lita 500–800 kwa msimu',
-    'Moderate — 500–800 L per season',
-    '18–30°C',
-    'Tani 2–5 kwa ekari',
-    '2–5 tons per acre',
-    '["Maize streak virus", "Gray leaf spot", "Armyworm", "Rust"]',
-    'Panda mbegu zilizothibitishwa. Tumia mbolea ya DAP wakati wa kupanda.',
-    'Use certified seeds. Apply DAP fertilizer at planting.',
-    '#c8860a'
-  ),
-  (
-    'Nyanya', 'Tomatoes', '🍅',
-    'Mwaka mzima (umwagiliaji unahitajika)',
-    'Year-round (irrigation needed)',
-    'Mara kwa mara — usimame maji',
-    'Frequent — avoid waterlogging',
-    '20–27°C',
-    'Tani 15–30 kwa ekari',
-    '15–30 tons per acre',
-    '["Late blight", "Bacterial wilt", "Whitefly", "Fusarium"]',
-    'Kagua magonjwa mara kwa mara. Tumia dawa za asili kwanza.',
-    'Monitor for disease regularly. Try organic pesticides first.',
-    '#c0392b'
-  ),
-  (
-    'Maharage', 'Beans', '🫘',
-    'Msimu wa mvua wa pili (Oktoba–Januari)',
-    'Short rains (October–January)',
-    'Chini hadi wastani — lita 300–500',
-    'Low to moderate — 300–500 L',
-    '15–25°C',
-    'Tani 0.8–1.5 kwa ekari',
-    '0.8–1.5 tons per acre',
-    '["Bean rust", "Angular leaf spot", "Bean fly", "Root rot"]',
-    'Zuia upotevu wa ardhi kwa kutumia mzunguko wa mazao.',
-    'Prevent soil depletion through crop rotation.',
-    '#8B4513'
-  ),
-  (
-    'Mchele', 'Rice', '🌾',
-    'Msimu wa mvua (Desemba–Aprili)',
-    'Long rains (December–April)',
-    'Juu sana — mashamba yaliyozingatia maji',
-    'Very high — flooded paddy fields',
-    '20–35°C',
-    'Tani 3–6 kwa ekari',
-    '3–6 tons per acre',
-    '["Rice blast", "Bacterial leaf blight", "Brown planthopper"]',
-    'Tumia mbegu za ubora wa juu. Weka maji ya kutosha shambani.',
-    'Use high-quality seeds. Maintain adequate standing water.',
-    '#DAA520'
-  ),
-  (
-    'Vitunguu', 'Onions', '🧅',
-    'Msimu wa kiangazi (Juni–Septemba)',
-    'Dry season (June–September)',
-    'Wastani — umwagiliaji wa mara kwa mara',
-    'Moderate — regular irrigation',
-    '13–24°C',
-    'Tani 8–20 kwa ekari',
-    '8–20 tons per acre',
-    '["Downy mildew", "Onion thrips", "Purple blotch", "Neck rot"]',
-    'Vuna vitunguu vinapokauka majani. Kausha vizuri kabla ya kuhifadhi.',
-    'Harvest when tops dry and fall. Cure well before storage.',
-    '#9B59B6'
-  )
-ON CONFLICT DO NOTHING;
+INSERT INTO public.educational_content (title, description, video_url, category, crop_name, language)
+SELECT * FROM (VALUES
+  ('Jinsi ya Kupanda Mahindi Tanzania',
+   'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo — kuandaa shamba, kupanda, na kutunza.',
+   'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'kupanda', 'Mahindi', 'Kiswahili'),
+  ('Umwagiliaji Bora kwa Mboga',
+   'Njia rahisi za kumwagilia mboga kwa matumizi ya maji kidogo lakini mavuno makubwa.',
+   'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'umwagiliaji', 'Mboga', 'Kiswahili'),
+  ('Magonjwa ya Nyanya na Jinsi ya Kuyatibu',
+   'Tambua magonjwa ya nyanya mapema na uchague dawa sahihi za asili na za duka.',
+   'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'magonjwa', 'Nyanya', 'Kiswahili'),
+  ('Kulinda Mazao dhidi ya Wadudu',
+   'Mbinu za asili na za kisayansi za kupigana na viwavi, nzi, na wadudu wengine.',
+   'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'magonjwa', 'Mazao Mengi', 'Kiswahili'),
+  ('Mbolea Bora kwa Udongo wa Tanzania',
+   'Aina za mbolea, wakati wa kutumia, na kiasi kinachofaa kwa udongo wa Tanzania.',
+   'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'kupanda', 'Mazao Mengi', 'Kiswahili')
+) AS v(title, description, video_url, category, crop_name, language)
+WHERE NOT EXISTS (SELECT 1 FROM public.educational_content LIMIT 1);

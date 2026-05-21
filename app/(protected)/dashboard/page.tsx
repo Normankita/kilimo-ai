@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion, type Variants } from 'framer-motion'
+import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import WeatherWidget from '@/components/weather-widget'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Sprout, TrendingUp, GraduationCap, ArrowRight } from 'lucide-react'
+import { DashboardTour } from '@/components/tutorial/dashboard-tour'
 
 const FALLBACK_PRICES = [
   { crop_name: 'Mahindi',   price_per_kg: 650,  market_location: 'Dar es Salaam' },
@@ -28,6 +29,7 @@ const CARD_VARIANTS: Variants = {
 
 export default function DashboardPage() {
   const { t } = useLanguage()
+  const reduced = useReducedMotion()
   const [user, setUser] = useState<{ name: string; location: string } | null>(null)
   const [prices, setPrices] = useState<typeof FALLBACK_PRICES>(FALLBACK_PRICES)
 
@@ -72,8 +74,13 @@ export default function DashboardPage() {
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t.dashboard.subtitle}</p>
       </motion.div>
 
-      {/* Weather */}
-      <motion.div custom={0} variants={CARD_VARIANTS} initial="hidden" animate="visible">
+      {/* Weather — slides in from the left */}
+      <motion.div
+        id="weather-widget"
+        initial={reduced ? {} : { opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
           {t.dashboard.weather} — {location}
         </p>
@@ -104,8 +111,13 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Market prices */}
-      <motion.div custom={2} variants={CARD_VARIANTS} initial="hidden" animate="visible">
+      {/* Market prices — slides in from the right */}
+      <motion.div
+        id="market-prices-widget"
+        initial={reduced ? {} : { opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
             {t.dashboard.marketPrices}
@@ -144,7 +156,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* AI CTA */}
-      <motion.div custom={3} variants={CARD_VARIANTS} initial="hidden" animate="visible">
+      <motion.div id="ai-assistant-link" custom={3} variants={CARD_VARIANTS} initial="hidden" animate="visible">
         <div className="rounded-xl p-5 flex items-center gap-4" style={{ backgroundColor: 'var(--primary)' }}>
           <div className="rounded-lg p-2.5 bg-white/10">
             <MessageSquare className="h-6 w-6 text-white" />
@@ -158,6 +170,8 @@ export default function DashboardPage() {
           </Link>
         </div>
       </motion.div>
+
+      <DashboardTour />
     </div>
   )
 }

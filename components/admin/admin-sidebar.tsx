@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf, Users,
-  LogOut, ChevronLeft, Menu, X, Shield,
+  LogOut, ChevronLeft, Menu, X, Shield, UserCircle,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -99,6 +99,11 @@ export default function AdminSidebar({ role, name, email }: Props) {
             </span>
           </div>
         </div>
+        <Link href="/profile" onClick={() => setMobileOpen(false)}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/8 hover:text-white transition-all duration-150">
+          <UserCircle className="h-4 w-4" />
+          Wasifu Wangu
+        </Link>
         <button onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/8 hover:text-white transition-all duration-150">
           <LogOut className="h-4 w-4" />

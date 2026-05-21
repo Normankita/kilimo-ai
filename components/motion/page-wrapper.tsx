@@ -1,11 +1,14 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 export default function PageWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const reduced = useReducedMotion()
+
+  if (reduced) return <>{children}</>
 
   return (
     <AnimatePresence mode="wait">

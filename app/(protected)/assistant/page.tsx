@@ -1,17 +1,19 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sprout, Send, Bot, User, AlertTriangle } from 'lucide-react'
+import { AssistantTour } from '@/components/tutorial/assistant-tour'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
 export default function AssistantPage() {
   const { t } = useLanguage()
+  const reduced = useReducedMotion()
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: t.assistant.greeting },
@@ -61,7 +63,7 @@ export default function AssistantPage() {
           user_id: user.id,
           messages: finalMessages,
           updated_at: new Date().toISOString(),
-        })
+        }, { onConflict: 'user_id' })
       }
     } catch {
       setError(t.assistant.networkError)
@@ -72,7 +74,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] -m-4 md:-m-6">
+    <div className="relative flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] -m-4 md:-m-6">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b"
         style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -89,15 +91,15 @@ export default function AssistantPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+      <div id="assistant-messages" className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
         style={{ backgroundColor: 'var(--surface-2)' }}>
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => (
             <motion.div
               key={i}
               className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-              initial={{ opacity: 0, y: 10, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={reduced ? {} : { opacity: 0, x: msg.role === 'user' ? 20 : -20, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
               <div className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center self-end ${
@@ -196,6 +198,7 @@ export default function AssistantPage() {
         style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
       >
         <Input
+          id="assistant-chat-input"
           ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -203,10 +206,12 @@ export default function AssistantPage() {
           disabled={loading}
           className="flex-1"
         />
-        <Button type="submit" disabled={loading || !input.trim()} size="icon">
+        <Button id="assistant-send-button" type="submit" disabled={loading || !input.trim()} size="icon">
           <Send className="h-4 w-4" />
         </Button>
       </form>
+
+      <AssistantTour />
     </div>
   )
 }

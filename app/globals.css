@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "driver.js/dist/driver.css";
 
 /* Enable class-based dark mode (used by next-themes) */
 @variant dark (&:where(.dark, .dark *));
@@ -43,6 +44,90 @@
   --sidebar:     #0e1410;
   --sidebar-fg:  #9db89a;
   --sidebar-act: rgba(255,255,255,0.08);
+}
+
+/* ─── Driver.js theme overrides ─────────────────────────────── */
+.driver-popover {
+  background-color: #1a2e1a !important;
+  border: 1px solid #2d5a27 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+.driver-popover-title {
+  color: #ffffff !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 15px !important;
+}
+
+.driver-popover-description {
+  color: #d1d5db !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.driver-popover-footer {
+  border-top: 1px solid #2d5a27 !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+}
+
+.driver-popover-progress-text {
+  color: #9ca3af !important;
+  font-size: 11px !important;
+}
+
+.driver-popover-next-btn,
+.driver-popover-done-btn {
+  background-color: #2d5a27 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-done-btn:hover {
+  background-color: #1e4530 !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: transparent !important;
+  color: #9ca3af !important;
+  border: 1px solid #3d5a3d !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+}
+
+.driver-popover-prev-btn:hover {
+  color: #ffffff !important;
+  border-color: #4a7a4a !important;
+}
+
+.driver-popover-close-btn {
+  color: #9ca3af !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #ffffff !important;
+}
+
+.driver-popover-arrow-side-left.driver-popover-arrow {
+  border-right-color: #1a2e1a !important;
+}
+
+.driver-popover-arrow-side-right.driver-popover-arrow {
+  border-left-color: #1a2e1a !important;
+}
+
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-bottom-color: #1a2e1a !important;
+}
+
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-top-color: #1a2e1a !important;
 }
 
 /* ─── Base styles ────────────────────────────────────────────── */
