@@ -74,102 +74,112 @@ export default function DashboardPage() {
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t.dashboard.subtitle}</p>
       </motion.div>
 
-      {/* Weather, slides in from the left */}
-      <motion.div
-        id="weather-widget"
-        initial={reduced ? {} : { opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-          {t.dashboard.weather}, {location}
-        </p>
-        <WeatherWidget location={`${location},TZ`} />
-      </motion.div>
+      {/* ── 2-col grid on desktop ───────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-      {/* Shortcuts */}
-      <motion.div custom={1} variants={CARD_VARIANTS} initial="hidden" animate="visible">
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-          {t.dashboard.shortcuts}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {shortcuts.map(({ href, label, desc, icon: Icon, color }) => (
-            <Link key={href} href={href}>
-              <motion.div
-                className="rounded-xl p-4 text-white cursor-pointer"
-                style={{ backgroundColor: color }}
-                whileHover={{ y: -2, filter: 'brightness(1.08)' }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <Icon className="h-5 w-5 mb-2 opacity-90" />
-                <p className="font-semibold text-sm">{label}</p>
-                <p className="text-xs opacity-75 mt-0.5">{desc}</p>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
+        {/* ── Left column: Weather + Shortcuts ─────────────────── */}
+        <div className="space-y-6">
+          {/* Weather */}
+          <motion.div
+            id="weather-widget"
+            initial={reduced ? {} : { opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+              {t.dashboard.weather}, {location}
+            </p>
+            <WeatherWidget location={`${location},TZ`} />
+          </motion.div>
 
-      {/* Market prices, slides in from the right */}
-      <motion.div
-        id="market-prices-widget"
-        initial={reduced ? {} : { opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-            {t.dashboard.marketPrices}
-          </p>
-          <Link href="/market" className="flex items-center gap-1 text-sm hover:underline transition-colors"
-            style={{ color: 'var(--primary)' }}>
-            {t.dashboard.viewMore} <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-              {prices.map((item, i) => (
-                <motion.div
-                  key={i}
-                  className="flex items-center justify-between px-4 py-3"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.06 }}
-                >
-                  <div>
-                    <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{item.crop_name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.market_location}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm" style={{ color: 'var(--primary)' }}>
-                      TZS {item.price_per_kg.toLocaleString()}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.dashboard.perKg}</p>
-                  </div>
-                </motion.div>
+          {/* Shortcuts */}
+          <motion.div custom={1} variants={CARD_VARIANTS} initial="hidden" animate="visible">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+              {t.dashboard.shortcuts}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {shortcuts.map(({ href, label, desc, icon: Icon, color }) => (
+                <Link key={href} href={href}>
+                  <motion.div
+                    className="rounded-xl p-4 text-white cursor-pointer"
+                    style={{ backgroundColor: color }}
+                    whileHover={{ y: -2, filter: 'brightness(1.08)' }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    <Icon className="h-5 w-5 mb-2 opacity-90" />
+                    <p className="font-semibold text-sm">{label}</p>
+                    <p className="text-xs opacity-75 mt-0.5">{desc}</p>
+                  </motion.div>
+                </Link>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* AI CTA */}
-      <motion.div id="ai-assistant-link" custom={3} variants={CARD_VARIANTS} initial="hidden" animate="visible">
-        <div className="rounded-xl p-5 flex items-center gap-4" style={{ backgroundColor: 'var(--primary)' }}>
-          <div className="rounded-lg p-2.5 bg-white/10">
-            <MessageSquare className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold text-white">{t.dashboard.aiTitle}</p>
-            <p className="text-sm text-white/70">{t.dashboard.aiDesc}</p>
-          </div>
-          <Link href="/assistant">
-            <Button variant="secondary" size="sm">{t.dashboard.ask}</Button>
-          </Link>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* ── Right column: Market prices + AI CTA ─────────────── */}
+        <div className="space-y-6">
+          {/* Market prices */}
+          <motion.div
+            id="market-prices-widget"
+            initial={reduced ? {} : { opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                {t.dashboard.marketPrices}
+              </p>
+              <Link href="/market" className="flex items-center gap-1 text-sm hover:underline transition-colors"
+                style={{ color: 'var(--primary)' }}>
+                {t.dashboard.viewMore} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                  {prices.map((item, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex items-center justify-between px-4 py-3"
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.06 }}
+                    >
+                      <div>
+                        <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{item.crop_name}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.market_location}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm" style={{ color: 'var(--primary)' }}>
+                          TZS {item.price_per_kg.toLocaleString()}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.dashboard.perKg}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* AI CTA */}
+          <motion.div id="ai-assistant-link" custom={3} variants={CARD_VARIANTS} initial="hidden" animate="visible">
+            <div className="rounded-xl p-5 flex items-center gap-4" style={{ backgroundColor: 'var(--primary)' }}>
+              <div className="rounded-lg p-2.5 bg-white/10">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-white">{t.dashboard.aiTitle}</p>
+                <p className="text-sm text-white/70">{t.dashboard.aiDesc}</p>
+              </div>
+              <Link href="/assistant">
+                <Button variant="secondary" size="sm">{t.dashboard.ask}</Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
 
       <DashboardTour />
     </div>

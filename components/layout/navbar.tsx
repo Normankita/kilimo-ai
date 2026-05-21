@@ -10,7 +10,7 @@ import {
   GraduationCap, LogOut, Menu, X, Languages, Sun, Moon,
   Monitor, User, QrCode, ChevronDown, ShieldCheck, Wheat,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface NavProfile {
@@ -54,20 +54,30 @@ export default function Navbar() {
 
   useEffect(() => { setMounted(true) }, [])
 
+  const fetchProfile = useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url, role')
+      .eq('id', user.id)
+      .single()
+    setNavProfile({
+      full_name: data?.full_name || user.user_metadata?.full_name || null,
+      avatar_url: data?.avatar_url ?? null,
+      role: data?.role ?? 'farmer',
+    })
+  }, [])
+
   useEffect(() => {
-    async function fetchProfile() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url, role')
-        .eq('id', user.id)
-        .single()
-      setNavProfile(data)
-    }
     fetchProfile()
-  }, [pathname])
+  }, [fetchProfile, pathname])
+
+  useEffect(() => {
+    window.addEventListener('kilimo:profile-updated', fetchProfile)
+    return () => window.removeEventListener('kilimo:profile-updated', fetchProfile)
+  }, [fetchProfile])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -105,6 +115,7 @@ export default function Navbar() {
           alt="avatar"
           style={{ width: dim, height: dim }}
           className="rounded-full object-cover shrink-0"
+          onError={() => setNavProfile(prev => prev ? { ...prev, avatar_url: null } : null)}
         />
       )
     }

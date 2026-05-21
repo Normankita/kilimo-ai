@@ -30,8 +30,8 @@ export default async function ProfileLayout({ children }: { children: React.Reac
       ) : (
         <Navbar />
       )}
-      <main className="md:ml-56 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
-        <div className="max-w-3xl mx-auto p-4 md:p-6">
+      <main className={isAdmin ? 'md:ml-56 pb-20 md:pb-0 min-h-screen' : 'pt-14 pb-20 md:pb-6 min-h-screen'}>
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           <PageWrapper>{children}</PageWrapper>
         </div>
       </main>

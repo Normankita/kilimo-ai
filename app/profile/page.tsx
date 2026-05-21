@@ -1,8 +1,5 @@
 'use client'
 
-// Run this in Supabase SQL Editor (adds phone_number column):
-// alter table profiles add column if not exists phone_number text;
-
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Camera, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+import { useLanguage } from '@/lib/language-context'
 
 const TZ_REGIONS = [
   'Dar es Salaam', 'Arusha', 'Dodoma', 'Mbeya', 'Morogoro', 'Mwanza',
@@ -22,12 +20,6 @@ const TZ_REGIONS = [
   'Ruvuma', 'Shinyanga', 'Singida', 'Tabora', 'Kigoma', 'Pwani', 'Geita',
   'Katavi', 'Njombe', 'Simiyu', 'Songwe', 'Kaskazini Unguja', 'Kusini Unguja',
 ]
-
-const ROLE_LABEL: Record<string, string> = {
-  farmer: 'Mkulima',
-  admin: 'Msimamizi',
-  super_admin: 'Msimamizi Mkuu',
-}
 
 const ROLE_VARIANT: Record<string, 'success' | 'secondary' | 'outline'> = {
   farmer: 'success',
@@ -54,9 +46,9 @@ function pwdStrength(pwd: string) {
   const score = [
     pwd.length >= 8, /[A-Z]/.test(pwd), /[0-9]/.test(pwd), /[^A-Za-z0-9]/.test(pwd),
   ].filter(Boolean).length
-  if (score <= 1) return { label: 'Dhaifu', color: '#ef4444', w: '28%' }
-  if (score <= 2) return { label: 'Wastani', color: '#f59e0b', w: '60%' }
-  return { label: 'Imara', color: '#22c55e', w: '100%' }
+  if (score <= 1) return { strength: 'weak' as const, color: '#ef4444', w: '28%' }
+  if (score <= 2) return { strength: 'medium' as const, color: '#f59e0b', w: '60%' }
+  return { strength: 'strong' as const, color: '#22c55e', w: '100%' }
 }
 
 function GoogleIcon() {
@@ -72,6 +64,7 @@ function GoogleIcon() {
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const supabase = createClient()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -101,6 +94,18 @@ export default function ProfilePage() {
   const [deleteInput, setDeleteInput] = useState('')
   const [deleting, setDeleting] = useState(false)
 
+  const roleLabel: Record<string, string> = {
+    farmer: t.profile.roleFarmer,
+    admin: t.profile.roleAdmin,
+    super_admin: t.profile.roleSuperAdmin,
+  }
+
+  const strengthLabel: Record<'weak' | 'medium' | 'strong', string> = {
+    weak: t.profile.strengthWeak,
+    medium: t.profile.strengthMedium,
+    strong: t.profile.strengthStrong,
+  }
+
   const dirty = (Object.keys(BLANK) as (keyof ProfileForm)[]).some(
     k => form[k] !== saved[k]
   )
@@ -117,20 +122,19 @@ export default function ProfilePage() {
       const { data: p } = await supabase
         .from('profiles').select('*').eq('id', user.id).single()
 
-      if (p) {
-        setRole(p.role ?? 'farmer')
-        setAvatarUrl(p.avatar_url ?? '')
-        const f: ProfileForm = {
-          full_name: p.full_name ?? '',
-          phone_number: p.phone_number ?? '',
-          location: p.location ?? '',
-          farm_location: p.farm_location ?? '',
-          bio: p.bio ?? '',
-          preferred_language: p.preferred_language ?? 'sw',
-        }
-        setForm(f)
-        setSaved(f)
+      setRole(p?.role ?? 'farmer')
+      setAvatarUrl(p?.avatar_url ?? '')
+
+      const f: ProfileForm = {
+        full_name: p?.full_name || user.user_metadata?.full_name || '',
+        phone_number: p?.phone_number ?? '',
+        location: p?.location || user.user_metadata?.location || '',
+        farm_location: p?.farm_location ?? '',
+        bio: p?.bio ?? '',
+        preferred_language: p?.preferred_language ?? 'sw',
       }
+      setForm(f)
+      setSaved(f)
       setLoading(false)
     }
     load()
@@ -140,19 +144,19 @@ export default function ProfilePage() {
     const handler = (e: BeforeUnloadEvent) => {
       if (dirty) {
         e.preventDefault()
-        e.returnValue = 'Una mabadiliko ambayo hayajahifadhiwa. Endelea?'
+        e.returnValue = t.profile.unsavedBeforeUnload
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty])
+  }, [dirty, t])
 
   function f(k: keyof ProfileForm, v: string) {
     setForm(prev => ({ ...prev, [k]: v }))
   }
 
   async function handleSave() {
-    if (!form.full_name.trim()) { toast.error('Jina kamili linahitajika'); return }
+    if (!form.full_name.trim()) { toast.error(t.profile.fullNameRequired); return }
     setSaving(true)
     const { error } = await supabase
       .from('profiles')
@@ -168,15 +172,16 @@ export default function ProfilePage() {
     if (error) {
       toast.error(error.message)
     } else {
-      toast.success('Mabadiliko yamehifadhiwa!')
+      toast.success(t.profile.changesSaved)
       setSaved({ ...form })
+      window.dispatchEvent(new CustomEvent('kilimo:profile-updated'))
     }
     setSaving(false)
   }
 
   async function handleAvatar(file: File) {
-    if (file.size > 2 * 1024 * 1024) { toast.error('Picha lazima iwe chini ya 2MB'); return }
-    if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) { toast.error('Tumia JPG au PNG tu'); return }
+    if (file.size > 2 * 1024 * 1024) { toast.error(t.profile.avatarTooBig); return }
+    if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) { toast.error(t.profile.avatarWrongType); return }
 
     setUploading(true)
     setUploadPct(15)
@@ -189,7 +194,7 @@ export default function ProfilePage() {
     clearInterval(tick)
 
     if (error) {
-      toast.error('Hitilafu ya kupakia picha: ' + error.message)
+      toast.error(t.profile.avatarError + ': ' + error.message)
       setUploading(false)
       setUploadPct(0)
       return
@@ -200,26 +205,27 @@ export default function ProfilePage() {
     const url = `${publicUrl}?v=${Date.now()}`
     await supabase.from('profiles').update({ avatar_url: url }).eq('id', uid!)
     setAvatarUrl(url)
-    toast.success('Picha ya wasifu imesasishwa!')
+    toast.success(t.profile.avatarUpdated)
+    window.dispatchEvent(new CustomEvent('kilimo:profile-updated'))
     setTimeout(() => { setUploading(false); setUploadPct(0) }, 700)
   }
 
   async function handlePasswordChange() {
-    if (!currPwd) { toast.error('Weka nywila yako ya sasa'); return }
-    if (newPwd.length < 6) { toast.error('Nywila mpya lazima iwe na herufi 6 au zaidi'); return }
-    if (newPwd !== confirmPwd) { toast.error('Nywila mpya hazilingani'); return }
+    if (!currPwd) { toast.error(t.profile.enterCurrentPassword); return }
+    if (newPwd.length < 6) { toast.error(t.profile.newPasswordTooShort); return }
+    if (newPwd !== confirmPwd) { toast.error(t.profile.passwordsNoMatch); return }
     setChangingPwd(true)
 
     if (email) {
       const { error: re } = await supabase.auth.signInWithPassword({ email, password: currPwd })
-      if (re) { toast.error('Nywila ya sasa si sahihi'); setChangingPwd(false); return }
+      if (re) { toast.error(t.profile.wrongCurrentPassword); setChangingPwd(false); return }
     }
 
     const { error } = await supabase.auth.updateUser({ password: newPwd })
     if (error) {
       toast.error(error.message)
     } else {
-      toast.success('Nywila imebadilishwa kikamilifu!')
+      toast.success(t.profile.passwordChanged)
       setCurrPwd(''); setNewPwd(''); setConfirmPwd('')
     }
     setChangingPwd(false)
@@ -239,7 +245,7 @@ export default function ProfilePage() {
     const res = await fetch('/api/delete-account', { method: 'DELETE' })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      toast.error(body.error ?? 'Hitilafu ya kufuta akaunti')
+      toast.error(body.error ?? t.profile.deleteError)
       setDeleting(false)
       return
     }
@@ -251,14 +257,21 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-xl mx-auto space-y-4">
-        {[1, 2, 3].map(i => <div key={i} className="h-48 rounded-xl shimmer" />)}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="h-64 rounded-xl shimmer" />
+          <div className="lg:col-span-2 h-64 rounded-xl shimmer" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="h-48 rounded-xl shimmer" />
+          <div className="h-48 rounded-xl shimmer" />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-5 pb-8">
+    <div className="space-y-5 pb-8">
       {/* Unsaved changes banner */}
       {dirty && (
         <motion.div
@@ -266,24 +279,26 @@ export default function ProfilePage() {
           className="flex items-center justify-between rounded-xl px-4 py-3"
           style={{ backgroundColor: 'rgba(42,92,63,0.1)', border: '1px solid rgba(42,92,63,0.3)' }}>
           <p className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
-            Kuna mabadiliko ambayo hayajahifadhiwa
+            {t.profile.unsavedChanges}
           </p>
           <Button size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? 'Inahifadhi...' : 'Hifadhi Sasa'}
+            {saving ? t.profile.saving : t.profile.saveNow}
           </Button>
         </motion.div>
       )}
 
-      {/* ── Card 1: Profile Info ─────────────────────────────── */}
-      <Card>
-        <div className="p-5 space-y-6">
-          {/* Avatar section */}
-          <div className="flex flex-col items-center gap-4">
+      {/* ── Row 1: Avatar card + Profile form ──────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+
+        {/* Avatar / identity column */}
+        <Card>
+          <div className="p-6 flex flex-col items-center gap-4 text-center">
             <div className="relative group cursor-pointer" onClick={() => !uploading && fileRef.current?.click()}>
               <div className="h-28 w-28 rounded-full overflow-hidden"
                 style={{ outline: '3px solid var(--border)', outlineOffset: '3px' }}>
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                  <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover"
+                    onError={() => setAvatarUrl('')} />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-3xl font-bold text-white"
                     style={{ backgroundColor: 'var(--primary)' }}>
@@ -306,69 +321,81 @@ export default function ProfilePage() {
               }} />
 
             {uploading && (
-              <div className="w-40 space-y-1.5">
+              <div className="w-full space-y-1.5">
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
                   <motion.div className="h-full rounded-full" style={{ backgroundColor: 'var(--primary)' }}
                     animate={{ width: `${uploadPct}%` }} transition={{ duration: 0.3 }} />
                 </div>
                 <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-                  {uploadPct < 100 ? `Inapakia... ${uploadPct}%` : '✓ Imekamilika'}
+                  {uploadPct < 100 ? `${t.profile.uploading} ${uploadPct}%` : t.profile.uploadDone}
                 </p>
               </div>
             )}
 
-            <div className="text-center">
+            <div>
               <p className="font-semibold text-lg" style={{ color: 'var(--text)' }}>
                 {form.full_name || '—'}
               </p>
               <Badge variant={ROLE_VARIANT[role] ?? 'outline'} className="mt-1.5">
-                {ROLE_LABEL[role] ?? role}
+                {roleLabel[role] ?? role}
               </Badge>
               {email && (
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{email}</p>
+                <p className="text-xs mt-2 break-all" style={{ color: 'var(--text-muted)' }}>{email}</p>
               )}
             </div>
+
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {t.profile.clickToChangePhoto}
+            </p>
           </div>
+        </Card>
 
-          {/* Form */}
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Jina Kamili *</Label>
-              <Input value={form.full_name} onChange={e => f('full_name', e.target.value)}
-                placeholder="Jina na Ukoo" />
+        {/* Form fields column (takes 2/3 width on lg) */}
+        <Card className="lg:col-span-2">
+          <div className="p-6 space-y-5">
+            <h2 className="font-semibold" style={{ color: 'var(--text)' }}>{t.profile.profileInfo}</h2>
+
+            {/* 2-col grid for short fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>{t.profile.fullName}</Label>
+                <Input value={form.full_name} onChange={e => f('full_name', e.target.value)}
+                  placeholder={t.profile.fullNamePlaceholder} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.profile.phone}</Label>
+                <Input value={form.phone_number} onChange={e => f('phone_number', e.target.value)}
+                  placeholder={t.profile.phonePlaceholder} type="tel" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.profile.region}</Label>
+                <select
+                  value={form.location}
+                  onChange={e => f('location', e.target.value)}
+                  className="w-full h-10 rounded-lg border px-3 text-sm"
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    borderColor: 'var(--border)',
+                    color: form.location ? 'var(--text)' : 'var(--text-muted)',
+                  }}>
+                  <option value="">{t.profile.selectRegion}</option>
+                  {TZ_REGIONS.map(r => <option key={r}>{r}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.profile.farmLocation}</Label>
+                <Input value={form.farm_location} onChange={e => f('farm_location', e.target.value)}
+                  placeholder={t.profile.farmLocationPlaceholder} />
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Namba ya Simu</Label>
-              <Input value={form.phone_number} onChange={e => f('phone_number', e.target.value)}
-                placeholder="+255 7XX XXX XXX" type="tel" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Mkoa</Label>
-              <select
-                value={form.location}
-                onChange={e => f('location', e.target.value)}
-                className="w-full h-10 rounded-lg border px-3 text-sm"
-                style={{
-                  backgroundColor: 'var(--surface)',
-                  borderColor: 'var(--border)',
-                  color: form.location ? 'var(--text)' : 'var(--text-muted)',
-                }}>
-                <option value="">Chagua Mkoa...</option>
-                {TZ_REGIONS.map(r => <option key={r}>{r}</option>)}
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Mahali pa Shamba</Label>
-              <Input value={form.farm_location} onChange={e => f('farm_location', e.target.value)}
-                placeholder="Mfano: Kilosa, Morogoro" />
-            </div>
-
+            {/* Bio — full width */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Maelezo Mafupi</Label>
+                <Label>{t.profile.bio}</Label>
                 <span className="text-xs" style={{ color: form.bio.length > 180 ? '#ef4444' : 'var(--text-muted)' }}>
                   {form.bio.length}/200
                 </span>
@@ -376,187 +403,204 @@ export default function ProfilePage() {
               <textarea
                 value={form.bio}
                 onChange={e => f('bio', e.target.value.slice(0, 200))}
-                placeholder="Eleza kidogo kuhusu wewe na shamba lako..."
+                placeholder={t.profile.bioPlaceholder}
                 rows={3}
                 maxLength={200}
                 className="w-full rounded-lg border px-3 py-2 text-sm resize-none"
                 style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }} />
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Lugha Inayopendelewa</Label>
-              <div className="grid grid-cols-2 rounded-lg overflow-hidden border"
-                style={{ borderColor: 'var(--border)' }}>
-                {[{ v: 'sw', l: 'Kiswahili' }, { v: 'en', l: 'English' }].map(({ v, l }) => (
-                  <button key={v} type="button" onClick={() => f('preferred_language', v)}
-                    className="py-2.5 text-sm font-medium transition-colors"
-                    style={{
-                      backgroundColor: form.preferred_language === v ? 'var(--primary)' : 'var(--surface)',
-                      color: form.preferred_language === v ? 'white' : 'var(--text-muted)',
-                    }}>
-                    {l}
+            {/* Language + Save in a row */}
+            <div className="flex items-end gap-4">
+              <div className="space-y-1.5 flex-1">
+                <Label>{t.profile.preferredLanguage}</Label>
+                <div className="grid grid-cols-2 rounded-lg overflow-hidden border"
+                  style={{ borderColor: 'var(--border)' }}>
+                  {[{ v: 'sw', l: 'Kiswahili' }, { v: 'en', l: 'English' }].map(({ v, l }) => (
+                    <button key={v} type="button" onClick={() => f('preferred_language', v)}
+                      className="py-2.5 text-sm font-medium transition-colors"
+                      style={{
+                        backgroundColor: form.preferred_language === v ? 'var(--primary)' : 'var(--surface)',
+                        color: form.preferred_language === v ? 'white' : 'var(--text-muted)',
+                      }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Button className="shrink-0 px-8" onClick={handleSave} disabled={saving || !dirty}>
+                {saving ? t.profile.saving : t.profile.save}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* ── Row 2: Security + Danger Zone ─────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+
+        {/* Security card */}
+        <Card>
+          <div className="p-6 space-y-5">
+            <h2 className="font-semibold" style={{ color: 'var(--text)' }}>{t.profile.security}</h2>
+
+            {/* Change password */}
+            <div className="space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                {t.profile.changePassword}
+              </p>
+
+              <div className="space-y-1.5">
+                <Label>{t.profile.currentPassword}</Label>
+                <div className="relative">
+                  <Input type={showCurr ? 'text' : 'password'} value={currPwd}
+                    onChange={e => setCurrPwd(e.target.value)} placeholder="••••••••" className="pr-10" />
+                  <button type="button" onClick={() => setShowCurr(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
+                    {showCurr ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
 
-            <Button className="w-full" onClick={handleSave} disabled={saving || !dirty}>
-              {saving ? 'Inahifadhi...' : 'Hifadhi Mabadiliko'}
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* ── Card 2: Security ─────────────────────────────────── */}
-      <Card>
-        <div className="p-5 space-y-6">
-          <h2 className="font-semibold" style={{ color: 'var(--text)' }}>Usalama</h2>
-
-          {/* Change password */}
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-              Badilisha Nywila
-            </p>
-
-            <div className="space-y-1.5">
-              <Label>Nywila ya Sasa</Label>
-              <div className="relative">
-                <Input type={showCurr ? 'text' : 'password'} value={currPwd}
-                  onChange={e => setCurrPwd(e.target.value)} placeholder="••••••••" className="pr-10" />
-                <button type="button" onClick={() => setShowCurr(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
-                  {showCurr ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Nywila Mpya</Label>
-              <div className="relative">
-                <Input type={showNew ? 'text' : 'password'} value={newPwd}
-                  onChange={e => setNewPwd(e.target.value)} placeholder="••••••••" className="pr-10" />
-                <button type="button" onClick={() => setShowNew(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
-                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {strength && (
-                <div className="space-y-1 pt-0.5">
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
-                    <motion.div className="h-full rounded-full" style={{ backgroundColor: strength.color }}
-                      animate={{ width: strength.w }} transition={{ duration: 0.3 }} />
+              <div className="space-y-1.5">
+                <Label>{t.profile.newPassword}</Label>
+                <div className="relative">
+                  <Input type={showNew ? 'text' : 'password'} value={newPwd}
+                    onChange={e => setNewPwd(e.target.value)} placeholder="••••••••" className="pr-10" />
+                  <button type="button" onClick={() => setShowNew(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
+                    {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {strength && (
+                  <div className="space-y-1 pt-0.5">
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
+                      <motion.div className="h-full rounded-full" style={{ backgroundColor: strength.color }}
+                        animate={{ width: strength.w }} transition={{ duration: 0.3 }} />
+                    </div>
+                    <p className="text-xs font-medium" style={{ color: strength.color }}>
+                      {strengthLabel[strength.strength]}
+                    </p>
                   </div>
-                  <p className="text-xs font-medium" style={{ color: strength.color }}>{strength.label}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.profile.confirmNewPassword}</Label>
+                <Input type="password" value={confirmPwd}
+                  onChange={e => setConfirmPwd(e.target.value)} placeholder="••••••••" />
+                {confirmPwd && newPwd !== confirmPwd && (
+                  <p className="text-xs text-red-500">{t.profile.passwordsNoMatch}</p>
+                )}
+              </div>
+
+              <Button variant="outline" className="w-full" onClick={handlePasswordChange} disabled={changingPwd}>
+                {changingPwd ? t.profile.changingPassword : t.profile.changePassword}
+              </Button>
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--border)' }} />
+
+            {/* Connected accounts */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                {t.profile.connectedAccounts}
+              </p>
+
+              <div className="flex items-center justify-between rounded-lg px-3.5 py-3 border"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface-2)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+                    style={{ backgroundColor: 'var(--primary)' }}>
+                    @
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t.profile.emailAccount}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{email}</p>
+                  </div>
                 </div>
-              )}
-            </div>
+                <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>{t.profile.registered}</span>
+              </div>
 
-            <div className="space-y-1.5">
-              <Label>Thibitisha Nywila Mpya</Label>
-              <Input type="password" value={confirmPwd}
-                onChange={e => setConfirmPwd(e.target.value)} placeholder="••••••••" />
-              {confirmPwd && newPwd !== confirmPwd && (
-                <p className="text-xs text-red-500">Nywila hazilingani</p>
-              )}
+              <div className="flex items-center justify-between rounded-lg px-3.5 py-3 border"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface-2)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--border)' }}>
+                    <GoogleIcon />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Google</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {googleLinked ? t.profile.connected : t.profile.notConnected}
+                    </p>
+                  </div>
+                </div>
+                {googleLinked ? (
+                  <div className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--primary)' }}>
+                    <CheckCircle2 className="h-3.5 w-3.5" /> {t.profile.connected}
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={handleLinkGoogle} disabled={linkingGoogle}>
+                    {linkingGoogle ? '...' : t.profile.connect}
+                  </Button>
+                )}
+              </div>
             </div>
-
-            <Button variant="outline" className="w-full" onClick={handlePasswordChange} disabled={changingPwd}>
-              {changingPwd ? 'Inabadilisha...' : 'Badilisha Nywila'}
-            </Button>
           </div>
+        </Card>
 
-          <div style={{ borderTop: '1px solid var(--border)' }} />
-
-          {/* Connected accounts */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-              Akaunti Zilizounganishwa
+        {/* Danger Zone */}
+        <div className="rounded-xl p-6 space-y-4 h-fit"
+          style={{ border: '2px solid rgba(239,68,68,0.35)', backgroundColor: 'var(--surface)' }}>
+          <div>
+            <h2 className="font-semibold text-red-500">{t.profile.dangerZone}</h2>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+              {t.profile.dangerWarning}
             </p>
-
-            <div className="flex items-center justify-between rounded-lg px-3.5 py-3 border"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface-2)' }}>
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                  style={{ backgroundColor: 'var(--primary)' }}>
-                  @
-                </div>
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Barua Pepe</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{email}</p>
-                </div>
-              </div>
-              <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>Imesajiliwa</span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg px-3.5 py-3 border"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface-2)' }}>
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'var(--border)' }}>
-                  <GoogleIcon />
-                </div>
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Google</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {googleLinked ? 'Imeunganishwa' : 'Haijaungansishwa'}
-                  </p>
-                </div>
-              </div>
-              {googleLinked ? (
-                <div className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--primary)' }}>
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Imeunganishwa
-                </div>
-              ) : (
-                <Button size="sm" variant="outline" onClick={handleLinkGoogle} disabled={linkingGoogle}>
-                  {linkingGoogle ? '...' : 'Unganisha'}
-                </Button>
-              )}
-            </div>
           </div>
+          <div className="rounded-lg p-3 space-y-1"
+            style={{ backgroundColor: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}>
+            <p className="text-xs font-semibold text-red-500">{t.profile.deleteAccount}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {t.profile.deleteWarningDesc}
+            </p>
+          </div>
+          <Button variant="outline"
+            className="border-red-400 text-red-500 hover:bg-red-50"
+            onClick={() => { setDeleteModal(true); setDeleteInput('') }}>
+            {t.profile.deleteMyAccount}
+          </Button>
         </div>
-      </Card>
-
-      {/* ── Card 3: Danger Zone ──────────────────────────────── */}
-      <div className="rounded-xl p-5 space-y-3"
-        style={{ border: '2px solid rgba(239,68,68,0.35)', backgroundColor: 'var(--surface)' }}>
-        <div>
-          <h2 className="font-semibold text-red-500">Eneo la Hatari</h2>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            Vitendo hivi haviwezi kubatilishwa. Kuwa makini sana.
-          </p>
-        </div>
-        <Button variant="outline"
-          className="border-red-400 text-red-500 hover:bg-red-50"
-          onClick={() => { setDeleteModal(true); setDeleteInput('') }}>
-          Futa Akaunti
-        </Button>
       </div>
 
       {/* Delete modal */}
-      <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title="Futa Akaunti">
+      <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title={t.profile.deleteModalTitle}>
         <div className="space-y-4">
           <div className="rounded-lg p-3"
             style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
             <p className="text-sm" style={{ color: 'var(--text)' }}>
-              <strong>Onyo:</strong> Kufuta akaunti yako kutaondoa data yako yote, mazungumzo, mapendeleo, na taarifa za wasifu. Kitendo hiki hakiwezi kubatilishwa.
+              <strong>{t.profile.warning}:</strong> {t.profile.deleteModalWarning}
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label>Andika <strong>FUTA</strong> kuthibitisha</Label>
+            <Label>
+              {t.profile.typeToConfirm} <strong>{t.profile.confirmWord}</strong> {t.profile.typeToConfirmSuffix}
+            </Label>
             <Input value={deleteInput}
               onChange={e => setDeleteInput(e.target.value.toUpperCase())}
-              placeholder="FUTA" className="font-mono tracking-widest text-center" />
+              placeholder={t.profile.confirmWord} className="font-mono tracking-widest text-center" />
           </div>
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => setDeleteModal(false)}>
-              Ghairi
+              {t.profile.cancel}
             </Button>
             <button
-              disabled={deleteInput !== 'FUTA' || deleting}
+              disabled={deleteInput !== t.profile.confirmWord || deleting}
               onClick={handleDeleteAccount}
               className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-40"
               style={{ backgroundColor: '#dc2626' }}>
-              {deleting ? 'Inafuta...' : 'Futa Akaunti'}
+              {deleting ? t.profile.deleting : t.profile.deleteAccount}
             </button>
           </div>
         </div>
