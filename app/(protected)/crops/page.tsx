@@ -9,10 +9,10 @@ import { Droplets, Calendar, Bug, BarChart3, Thermometer, Lightbulb } from 'luci
 const CROPS = [
   {
     name: 'Mahindi', nameEn: 'Maize', emoji: '🌽',
-    season:  { sw: 'Masika (Machi–Juni) na Vuli (Okt–Jan)',        en: 'Long rains (Mar–Jun) & short rains (Oct–Jan)' },
-    water:   { sw: 'Wastani — mm 500–800 kwa msimu',               en: 'Moderate — 500–800 mm per season' },
-    temp:    '18–30°C',
-    yield:   { sw: '2–4 t/ha (kawaida) | 6–8 t/ha (na mbolea)',   en: '2–4 t/ha (basic) | 6–8 t/ha (with fertiliser)' },
+    season: { sw: 'Masika (Machi–Juni) na Vuli (Okt–Jan)', en: 'Long rains (Mar–Jun) & short rains (Oct–Jan)' },
+    water: { sw: 'Wastani, mm 500–800 kwa msimu', en: 'Moderate, 500–800 mm per season' },
+    temp: '18–30°C',
+    yield: { sw: '2–4 t/ha (kawaida) | 6–8 t/ha (na mbolea)', en: '2–4 t/ha (basic) | 6–8 t/ha (with fertiliser)' },
     diseases: ['Maize streak', 'Rust (Kutu)', 'Smut', 'Fall armyworm'],
     tips: {
       sw: 'Panda mbegu bora. Weka DAP wakati wa kupanda, urea wiki 4–6 baadaye.',
@@ -22,10 +22,10 @@ const CROPS = [
   },
   {
     name: 'Mchele', nameEn: 'Rice', emoji: '🌾',
-    season:  { sw: 'Masika (Machi–Agosti) — unahitaji mvua nyingi', en: 'Rainy season (Mar–Aug) — needs heavy rain' },
-    water:   { sw: 'Nyingi — mm 1000–2000 au umwagiliaji',          en: 'Heavy — 1000–2000 mm or irrigation needed' },
-    temp:    '20–35°C',
-    yield:   { sw: '2–3 t/ha (mvua) | 4–6 t/ha (umwagiliaji)',     en: '2–3 t/ha (rain-fed) | 4–6 t/ha (irrigated)' },
+    season: { sw: 'Masika (Machi–Agosti), unahitaji mvua nyingi', en: 'Rainy season (Mar–Aug), needs heavy rain' },
+    water: { sw: 'Nyingi, mm 1000–2000 au umwagiliaji', en: 'Heavy, 1000–2000 mm or irrigation needed' },
+    temp: '20–35°C',
+    yield: { sw: '2–3 t/ha (mvua) | 4–6 t/ha (umwagiliaji)', en: '2–3 t/ha (rain-fed) | 4–6 t/ha (irrigated)' },
     diseases: ['Rice blast', 'Sheath blight', 'Leaf rust'],
     tips: {
       sw: 'Panda katika safu cm 20×20. Punguza maji wiki 2 kabla ya kuvuna.',
@@ -35,10 +35,10 @@ const CROPS = [
   },
   {
     name: 'Nyanya', nameEn: 'Tomatoes', emoji: '🍅',
-    season:  { sw: 'Mwaka mzima (bora hali kavu na umwagiliaji)',  en: 'Year-round (best in dry season with irrigation)' },
-    water:   { sw: 'Wastani–nyingi; umwagiliaji mara kwa mara',    en: 'Moderate–heavy; regular irrigation' },
-    temp:    '18–27°C',
-    yield:   { sw: '15–25 t/ha',                                   en: '15–25 t/ha' },
+    season: { sw: 'Mwaka mzima (bora hali kavu na umwagiliaji)', en: 'Year-round (best in dry season with irrigation)' },
+    water: { sw: 'Wastani–nyingi; umwagiliaji mara kwa mara', en: 'Moderate–heavy; regular irrigation' },
+    temp: '18–27°C',
+    yield: { sw: '15–25 t/ha', en: '15–25 t/ha' },
     diseases: ['Early blight', 'Late blight', 'Fusarium wilt', 'Leaf miner'],
     tips: {
       sw: 'Tumia mbegu zilizothibitishwa. Funga mimea kwa nguzo. Dawa mapema.',
@@ -48,10 +48,10 @@ const CROPS = [
   },
   {
     name: 'Maharage', nameEn: 'Beans', emoji: '🫘',
-    season:  { sw: 'Masika na Vuli — fuata mvua',                  en: 'Both rainy seasons — follow the rains' },
-    water:   { sw: 'Kidogo–wastani — mm 300–500 kwa msimu',        en: 'Low–moderate — 300–500 mm per season' },
-    temp:    '16–24°C',
-    yield:   { sw: '0.8–1.5 t/ha',                                 en: '0.8–1.5 t/ha' },
+    season: { sw: 'Masika na Vuli, fuata mvua', en: 'Both rainy seasons, follow the rains' },
+    water: { sw: 'Kidogo–wastani, mm 300–500 kwa msimu', en: 'Low–moderate, 300–500 mm per season' },
+    temp: '16–24°C',
+    yield: { sw: '0.8–1.5 t/ha', en: '0.8–1.5 t/ha' },
     diseases: ['Angular leaf spot', 'Bean rust', 'Bacterial blight', 'Aphids'],
     tips: {
       sw: 'Zungushia mazao kila msimu. Vuna mapema ili mbegu zisiote.',
@@ -61,14 +61,14 @@ const CROPS = [
   },
   {
     name: 'Vitunguu', nameEn: 'Onions', emoji: '🧅',
-    season:  { sw: 'Hali kavu (Juni–Novemba) — ukanda kame bora',  en: 'Dry season (Jun–Nov) — arid zones best' },
-    water:   { sw: 'Kidogo — mm 350–500, umwagiliaji kidogo',       en: 'Low — 350–500 mm, light irrigation' },
-    temp:    '13–24°C',
-    yield:   { sw: '10–20 t/ha',                                    en: '10–20 t/ha' },
+    season: { sw: 'Hali kavu (Juni–Novemba), ukanda kame bora', en: 'Dry season (Jun–Nov), arid zones best' },
+    water: { sw: 'Kidogo, mm 350–500, umwagiliaji kidogo', en: 'Low, 350–500 mm, light irrigation' },
+    temp: '13–24°C',
+    yield: { sw: '10–20 t/ha', en: '10–20 t/ha' },
     diseases: ['Purple blotch', 'Downy mildew', 'Thrips'],
     tips: {
-      sw: 'Usimwagilie kupita kiasi — vitunguu vinaoza. Vuna vikisalia nje.',
-      en: "Don't overwater — bulbs rot easily. Harvest when tops fall over.",
+      sw: 'Usimwagilie kupita kiasi, vitunguu vinaoza. Vuna vikisalia nje.',
+      en: "Don't overwater, bulbs rot easily. Harvest when tops fall over.",
     },
     accent: '#4a2a6e',
   },
@@ -120,9 +120,9 @@ export default function CropsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InfoRow icon={<Calendar className="h-4 w-4 text-emerald-600" />} label={t.crops.season} value={crop.season[lang]} />
-                  <InfoRow icon={<Droplets className="h-4 w-4 text-blue-500" />}    label={t.crops.water}  value={crop.water[lang]}  />
+                  <InfoRow icon={<Droplets className="h-4 w-4 text-blue-500" />} label={t.crops.water} value={crop.water[lang]} />
                   <InfoRow icon={<Thermometer className="h-4 w-4 text-orange-500" />} label={t.crops.temperature} value={crop.temp} />
-                  <InfoRow icon={<BarChart3 className="h-4 w-4 text-violet-500" />}  label={t.crops.yield}  value={crop.yield[lang]}  />
+                  <InfoRow icon={<BarChart3 className="h-4 w-4 text-violet-500" />} label={t.crops.yield} value={crop.yield[lang]} />
                 </div>
 
                 <div>

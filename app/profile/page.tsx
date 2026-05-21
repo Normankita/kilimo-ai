@@ -538,7 +538,7 @@ export default function ProfilePage() {
           <div className="rounded-lg p-3"
             style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
             <p className="text-sm" style={{ color: 'var(--text)' }}>
-              <strong>Onyo:</strong> Kufuta akaunti yako kutaondoa data yako yote — mazungumzo, mapendeleo, na taarifa za wasifu. Kitendo hiki hakiwezi kubatilishwa.
+              <strong>Onyo:</strong> Kufuta akaunti yako kutaondoa data yako yote, mazungumzo, mapendeleo, na taarifa za wasifu. Kitendo hiki hakiwezi kubatilishwa.
             </p>
           </div>
           <div className="space-y-1.5">

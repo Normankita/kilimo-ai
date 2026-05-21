@@ -1,9 +1,9 @@
-# Kilimo AI — Technical Documentation
+# Kilimo AI, Technical Documentation
 
 > **Version:** 1.0  
 > **Date:** May 2026  
-> **Project:** Kilimo AI — Smart Agriculture Platform  
-> **Classification:** Final Year University Project — Technical Reference  
+> **Project:** Kilimo AI, Smart Agriculture Platform  
+> **Classification:** Final Year University Project, Technical Reference  
 > **Document Type:** Software Architecture & API Reference
 
 ---
@@ -29,7 +29,7 @@
 
 Kilimo AI is a full-stack Progressive Web Application (PWA) designed to deliver agricultural intelligence to Tanzanian smallholder farmers. The system addresses a critical gap in the agricultural sector: the lack of accessible, timely, and locally-contextualised farming guidance in the Kiswahili language.
 
-The platform integrates three data streams — AI-driven conversational assistance, real-time meteorological data, and administratively-managed market price data — into a unified, mobile-first interface that can be installed on any smartphone without an App Store.
+The platform integrates three data streams, AI-driven conversational assistance, real-time meteorological data, and administratively-managed market price data, into a unified, mobile-first interface that can be installed on any smartphone without an App Store.
 
 ### Target Users
 
@@ -41,17 +41,17 @@ The platform integrates three data streams — AI-driven conversational assistan
 
 ### Key Features
 
-- **AI Agricultural Assistant** — Conversational AI powered by Groq/Llama 3.1, restricted to farming topics, responds primarily in Kiswahili.
-- **Real-time Weather Widget** — Fetches live meteorological data from OpenWeatherMap, localised to the user's region.
-- **Market Price Dashboard** — Displays crop prices across four major Tanzanian markets (Dar es Salaam, Dodoma, Arusha, Mbeya) with visual comparison bars.
-- **Crop Information Library** — Structured agronomic data for five core crops grown in Tanzania.
-- **Educational Video Library** — Categorised YouTube-embedded training videos filterable by category (planting, irrigation, diseases).
-- **User Profile Management** — Full CRUD for user profile, avatar upload to Supabase Storage, password change, Google account linking, and account deletion.
-- **PWA Install** — Installable on Android (Chrome) and iOS (Safari) as a native-like application.
-- **Role-Based Access Control (RBAC)** — Row Level Security (RLS) policies enforce data access at the database layer.
-- **Bilingual UI** — Full Kiswahili and English interface with persistent language preference per user.
-- **Interactive Onboarding Tour** — driver.js-powered step-by-step tutorial on first login.
-- **Dark/Light Theme** — System-aware theme switching via next-themes.
+- **AI Agricultural Assistant**, Conversational AI powered by Groq/Llama 3.1, restricted to farming topics, responds primarily in Kiswahili.
+- **Real-time Weather Widget**, Fetches live meteorological data from OpenWeatherMap, localised to the user's region.
+- **Market Price Dashboard**, Displays crop prices across four major Tanzanian markets (Dar es Salaam, Dodoma, Arusha, Mbeya) with visual comparison bars.
+- **Crop Information Library**, Structured agronomic data for five core crops grown in Tanzania.
+- **Educational Video Library**, Categorised YouTube-embedded training videos filterable by category (planting, irrigation, diseases).
+- **User Profile Management**, Full CRUD for user profile, avatar upload to Supabase Storage, password change, Google account linking, and account deletion.
+- **PWA Install**, Installable on Android (Chrome) and iOS (Safari) as a native-like application.
+- **Role-Based Access Control (RBAC)**, Row Level Security (RLS) policies enforce data access at the database layer.
+- **Bilingual UI**, Full Kiswahili and English interface with persistent language preference per user.
+- **Interactive Onboarding Tour**, driver.js-powered step-by-step tutorial on first login.
+- **Dark/Light Theme**, System-aware theme switching via next-themes.
 
 ---
 
@@ -63,9 +63,9 @@ Kilimo AI is built on a **client-server model** using the Next.js App Router par
 
 The architecture follows a **three-tier design**:
 
-1. **Presentation Tier** — React components and pages rendered client-side and server-side via Next.js.
-2. **Application Tier** — Next.js API routes (`/api/chat`, `/api/weather`, `/api/delete-account`) acting as a secure proxy between the client and third-party APIs.
-3. **Data Tier** — Supabase (PostgreSQL) for persistent storage, Supabase Auth for identity management, and Supabase Storage for binary assets.
+1. **Presentation Tier**, React components and pages rendered client-side and server-side via Next.js.
+2. **Application Tier**, Next.js API routes (`/api/chat`, `/api/weather`, `/api/delete-account`) acting as a secure proxy between the client and third-party APIs.
+3. **Data Tier**, Supabase (PostgreSQL) for persistent storage, Supabase Auth for identity management, and Supabase Storage for binary assets.
 
 ### Client-Server Model
 
@@ -94,25 +94,25 @@ The architecture follows a **three-tier design**:
 ### Component Diagram Description
 
 **Frontend Layer** (`/app`, `/components`):
-- **Landing Page** (`/app/page.tsx`) — Public marketing page with animated hero, feature highlights, and QR code entry.
-- **Auth Pages** (`/app/auth`, `/app/login`, `/app/register`, `/app/forgot-password`, `/app/reset-password`) — Supabase Auth UI flows for email/password and Google OAuth.
-- **Protected Layout** (`/app/(protected)/layout.tsx`) — Route group enforcing authentication middleware; wraps Dashboard, Assistant, Crops, Market, and Learn pages.
-- **Admin Panel** (`/app/admin`) — Role-gated admin interface for managing market prices and educational content.
-- **Profile Page** (`/app/profile`) — User profile CRUD, avatar upload, password change, Google link, account deletion.
-- **API Routes** (`/app/api`) — Server-side proxies shielding API keys from the client.
+- **Landing Page** (`/app/page.tsx`), Public marketing page with animated hero, feature highlights, and QR code entry.
+- **Auth Pages** (`/app/auth`, `/app/login`, `/app/register`, `/app/forgot-password`, `/app/reset-password`), Supabase Auth UI flows for email/password and Google OAuth.
+- **Protected Layout** (`/app/(protected)/layout.tsx`), Route group enforcing authentication middleware; wraps Dashboard, Assistant, Crops, Market, and Learn pages.
+- **Admin Panel** (`/app/admin`), Role-gated admin interface for managing market prices and educational content.
+- **Profile Page** (`/app/profile`), User profile CRUD, avatar upload, password change, Google link, account deletion.
+- **API Routes** (`/app/api`), Server-side proxies shielding API keys from the client.
 
 **Component Library** (`/components`):
-- `ui/` — Low-level primitives (Button, Card, Input, Label, Badge, Modal, Select, Tabs, Toast) built on Radix UI.
-- `layout/` — Navigation shell (sidebar, mobile bottom nav, header).
-- `weather-widget.tsx` — Self-contained weather card consuming `/api/weather`.
-- `motion/` — Reusable Framer Motion animation wrappers.
-- `tutorial/` — driver.js tour configurations for Dashboard and Assistant pages.
-- `admin/` — Admin-only content management components.
+- `ui/`, Low-level primitives (Button, Card, Input, Label, Badge, Modal, Select, Tabs, Toast) built on Radix UI.
+- `layout/`, Navigation shell (sidebar, mobile bottom nav, header).
+- `weather-widget.tsx`, Self-contained weather card consuming `/api/weather`.
+- `motion/`, Reusable Framer Motion animation wrappers.
+- `tutorial/`, driver.js tour configurations for Dashboard and Assistant pages.
+- `admin/`, Admin-only content management components.
 
 **Library Layer** (`/lib`):
-- `supabase/client.ts` — Client-side Supabase client factory (browser cookies).
-- `supabase/server.ts` — Server-side Supabase client (secure cookies, used in middleware and Server Components).
-- `language-context.tsx` — React context providing `t` (translation object) and `lang` state to the entire app.
+- `supabase/client.ts`, Client-side Supabase client factory (browser cookies).
+- `supabase/server.ts`, Server-side Supabase client (secure cookies, used in middleware and Server Components).
+- `language-context.tsx`, React context providing `t` (translation object) and `lang` state to the entire app.
 
 ---
 
@@ -293,7 +293,7 @@ Persists individual chat messages for conversation history per user.
 llama-3.1-8b-instant
 ```
 
-This model is Groq's fastest inference option, optimised for low-latency conversational responses — critical for mobile users on slower connections.
+This model is Groq's fastest inference option, optimised for low-latency conversational responses, critical for mobile users on slower connections.
 
 #### System Prompt Structure
 
@@ -415,7 +415,7 @@ Supabase is the core Backend-as-a-Service powering authentication, the database,
 
 #### Auth Flow
 
-Kilimo AI uses the `@supabase/ssr` package which handles session persistence via HTTP-only cookies — ensuring tokens are never accessible to JavaScript (protection against XSS attacks).
+Kilimo AI uses the `@supabase/ssr` package which handles session persistence via HTTP-only cookies, ensuring tokens are never accessible to JavaScript (protection against XSS attacks).
 
 **Client initialisation (browser):**
 ```typescript
@@ -556,7 +556,7 @@ Role enforcement happens at two levels:
 | Measure | Implementation |
 |---------|---------------|
 | **HTTPS Enforcement** | All traffic over TLS via Vercel |
-| **HTTP-only Cookies** | Auth tokens stored in `HttpOnly` cookies — inaccessible to JavaScript |
+| **HTTP-only Cookies** | Auth tokens stored in `HttpOnly` cookies, inaccessible to JavaScript |
 | **API Key Shielding** | All third-party API keys (Groq, OpenWeatherMap) are server-side environment variables, never exposed to the browser |
 | **RLS** | Per-row access control at the PostgreSQL engine level |
 | **Input Validation** | Password strength checked client-side; file type and size validated before avatar upload |
@@ -596,10 +596,10 @@ The Web App Manifest is located at `/public/manifest.json`:
 ```
 
 Key manifest properties:
-- **`display: "standalone"`** — App runs without browser UI chrome, appearing as a native app.
-- **`theme_color: "#2d5a27"`** — Matches the brand's primary dark green, used for Android status bar colouring.
-- **`orientation: "portrait"`** — Locks orientation to portrait mode for mobile-first experience.
-- **Maskable icon** — The 192×192 icon includes `"purpose": "any maskable"` for adaptive icon support on Android.
+- **`display: "standalone"`**, App runs without browser UI chrome, appearing as a native app.
+- **`theme_color: "#2d5a27"`**, Matches the brand's primary dark green, used for Android status bar colouring.
+- **`orientation: "portrait"`**, Locks orientation to portrait mode for mobile-first experience.
+- **Maskable icon**, The 192×192 icon includes `"purpose": "any maskable"` for adaptive icon support on Android.
 
 ### Service Worker Behaviour
 
@@ -615,9 +615,9 @@ const withPWA = require('next-pwa')({
 ```
 
 The generated service worker (`/public/sw.js`) applies Workbox caching strategies:
-- **Static assets** (JS, CSS, fonts, images) — `CacheFirst` strategy for instant loading.
-- **API routes** (`/api/*`) — `NetworkFirst` strategy, falling back to cache if offline.
-- **Pages** — `StaleWhileRevalidate` for fast perceived load with background updates.
+- **Static assets** (JS, CSS, fonts, images), `CacheFirst` strategy for instant loading.
+- **API routes** (`/api/*`), `NetworkFirst` strategy, falling back to cache if offline.
+- **Pages**, `StaleWhileRevalidate` for fast perceived load with background updates.
 
 > **Note:** As of Next.js 16 with Turbopack, `next-pwa` injects a webpack configuration. The `turbopack: {}` property has been added to `next.config.ts` to explicitly acknowledge Turbopack usage and suppress the compatibility warning.
 
@@ -649,8 +649,8 @@ The following environment variables must be configured in the deployment environ
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ Yes | Supabase project URL (e.g. `https://xxxx.supabase.co`). Exposed to browser. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Yes | Supabase anonymous key for client-side auth and data operations. Exposed to browser. RLS policies protect data. |
-| `GROQ_API_KEY` | ✅ Yes | Secret API key for Groq inference. **Server-side only** — never exposed to browser. |
-| `OPENWEATHERMAP_API_KEY` | ✅ Yes | Secret API key for OpenWeatherMap. **Server-side only** — never exposed to browser. |
+| `GROQ_API_KEY` | ✅ Yes | Secret API key for Groq inference. **Server-side only**, never exposed to browser. |
+| `OPENWEATHERMAP_API_KEY` | ✅ Yes | Secret API key for OpenWeatherMap. **Server-side only**, never exposed to browser. |
 | `NEXT_PUBLIC_APP_URL` | ✅ Yes | The deployed application URL (e.g. `https://kilimo-ai.vercel.app`). Used for OAuth redirect URIs and QR code generation. |
 
 ### Vercel Deployment Steps
@@ -697,7 +697,7 @@ Before going live, verify the following in the Supabase dashboard:
 
 ## 9. Known Limitations
 
-### Groq API — Free Tier Constraints
+### Groq API, Free Tier Constraints
 
 | Constraint | Details |
 |------------|---------|
@@ -708,7 +708,7 @@ Before going live, verify the following in the Supabase dashboard:
 
 **Mitigation:** Upgrade to Groq paid tier as user base grows. Implement client-side queuing and exponential retry with user-visible feedback.
 
-### Supabase — Free Tier Constraints
+### Supabase, Free Tier Constraints
 
 | Constraint | Details |
 |------------|---------|
@@ -726,14 +726,14 @@ Before going live, verify the following in the Supabase dashboard:
 The AI assistant requires an active internet connection. When offline:
 - Previously loaded pages (Dashboard, Crops, Market) may display cached data via the service worker.
 - The AI assistant chat input is disabled and returns an error if the network request fails.
-- There is no local AI inference capability — this would require shipping a model to the device.
+- There is no local AI inference capability, this would require shipping a model to the device.
 
-### Market Prices — Manual Update Dependency
+### Market Prices, Manual Update Dependency
 
 Current market prices are entered manually by administrators through the admin panel. This creates:
-- **Data freshness risk** — Prices may lag actual market conditions by days.
-- **Admin bottleneck** — Requires a dedicated person to collect and input price data regularly.
-- **Geographic limitation** — Only four markets are currently tracked.
+- **Data freshness risk**, Prices may lag actual market conditions by days.
+- **Admin bottleneck**, Requires a dedicated person to collect and input price data regularly.
+- **Geographic limitation**, Only four markets are currently tracked.
 
 ### Limited Crop Coverage
 
@@ -772,7 +772,7 @@ Extend the service worker to cache AI responses and allow offline browsing of:
 - Cached market prices from the last network session.
 - Downloaded educational content metadata (with embedded YouTube thumbnails).
 
-**Implementation approach:** Implement a Workbox `BackgroundSync` strategy for the AI chat — queuing user messages offline and delivering them when connectivity is restored.
+**Implementation approach:** Implement a Workbox `BackgroundSync` strategy for the AI chat, queuing user messages offline and delivering them when connectivity is restored.
 
 ### 10.4 Native Mobile App
 
@@ -802,8 +802,8 @@ Replace manual admin data entry with automated price collection:
 ### 10.7 Multilingual Expansion
 
 Extend the bilingual (Kiswahili/English) system to support:
-- **Regional dialects** — Sukuma, Chagga, Hehe for highland farming communities.
-- **Voice input/output** — Text-to-speech for farmers with limited literacy.
+- **Regional dialects**, Sukuma, Chagga, Hehe for highland farming communities.
+- **Voice input/output**, Text-to-speech for farmers with limited literacy.
 
 ### 10.8 Farmer Network / Community Feature
 
@@ -817,4 +817,4 @@ Add a community Q&A board where:
 *Technical Documentation prepared May 2026 for Kilimo AI v1.0*  
 *Stack: Next.js 16 · React 19 · TypeScript 5 · Supabase · Groq API · OpenWeatherMap · Tailwind CSS v4 · Framer Motion*
 
-*© 2026 Kilimo AI — University Final Year Project*
+*© 2026 Kilimo AI, University Final Year Project*

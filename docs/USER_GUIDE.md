@@ -1,8 +1,8 @@
-# Kilimo AI — Mwongozo wa Mtumiaji / User Guide
+# Kilimo AI, Mwongozo wa Mtumiaji / User Guide
 
 > **Toleo / Version:** 1.0  
 > **Tarehe / Date:** Mei 2026  
-> **Mradi / Project:** Kilimo AI — Smart Agriculture Platform  
+> **Mradi / Project:** Kilimo AI, Smart Agriculture Platform  
 > **Taasisi / Institution:** University Final Year Project
 
 ---
@@ -56,7 +56,7 @@ Mfumo wa Kilimo AI umeundwa hasa kwa:
 | 🤖 Msaidizi wa AI | Pata majibu ya maswali yako ya kilimo kwa Kiswahili wakati wowote |
 | 🌤️ Hali ya Hewa | Angalia hali ya hewa ya eneo lako kabla ya kupanda au kumwagilia |
 | 💰 Bei za Masoko | Jua bei za mazao katika masoko makubwa Tanzania kama Dar es Salaam, Dodoma, Arusha, na Mbeya |
-| 🌱 Taarifa za Mazao | Pata mwongozo wa kina wa kila zao — msimu, maji, joto, na magonjwa |
+| 🌱 Taarifa za Mazao | Pata mwongozo wa kina wa kila zao, msimu, maji, joto, na magonjwa |
 | 🎥 Elimu ya Video | Tazama video za mafunzo ya kilimo moja kwa moja kutoka kwenye mfumo |
 | 📱 Programu ya Simu | Sanikisha mfumo kama programu kwenye simu yako ya Android au iPhone |
 
@@ -102,17 +102,17 @@ Mfumo wa Kilimo AI unafanya kazi vizuri kwenye vivinjari vifuatavyo:
 
 Kilimo AI inafanya kazi vizuri kwenye vifaa vifuatavyo:
 
-- **Simu za Android** — Toleo la Android 8.0 au juu zaidi linapendekezwa.
-- **Simu za iPhone (iOS)** — Toleo la iOS 14 au juu zaidi linapendekezwa.
-- **Kompyuta za Windows, macOS, na Linux** — Vivinjari vyote vikuu vinafanya kazi.
-- **Vidonge (Tablets)** — iPad na vidonge vya Android vinafanya kazi vizuri.
+- **Simu za Android**, Toleo la Android 8.0 au juu zaidi linapendekezwa.
+- **Simu za iPhone (iOS)**, Toleo la iOS 14 au juu zaidi linapendekezwa.
+- **Kompyuta za Windows, macOS, na Linux**, Vivinjari vyote vikuu vinafanya kazi.
+- **Vidonge (Tablets)**, iPad na vidonge vya Android vinafanya kazi vizuri.
 
 ### Sanikisha kama Programu / Install as App
 
-Kilimo AI inaweza kusanikiwa kama programu ya kawaida (Progressive Web App — PWA) kwenye:
+Kilimo AI inaweza kusanikiwa kama programu ya kawaida (Progressive Web App, PWA) kwenye:
 
-- 📱 **Android** — kupitia Google Chrome
-- 🍎 **iOS/iPhone** — kupitia Apple Safari
+- 📱 **Android**, kupitia Google Chrome
+- 🍎 **iOS/iPhone**, kupitia Apple Safari
 
 Angalia [Sehemu ya 10](#10-kusanikisha-programu--installing-the-app) kwa maelezo kamili ya kusanikisha.
 
@@ -138,7 +138,7 @@ Watumiaji wapya lazima waunde akaunti kabla ya kutumia mfumo. Kuna njia mbili za
 2. Bonyeza kitufe cha **"Jiandikishe"** kwenye ukurasa wa nyumbani.
 3. Ingiza **jina lako kamili** (Mfano: *Juma Mwalimu*).
 4. Ingiza **anwani yako ya barua pepe** (Mfano: *juma@gmail.com*).
-5. Unda **nywila imara** — lazima iwe na herufi 6 au zaidi. Nywila imara ina:
+5. Unda **nywila imara**, lazima iwe na herufi 6 au zaidi. Nywila imara ina:
    - Herufi kubwa (A–Z)
    - Nambari (0–9)
    - Alama maalum (!@#$%)
@@ -155,7 +155,7 @@ Watumiaji wapya lazima waunde akaunti kabla ya kutumia mfumo. Kuna njia mbili za
 2. Bonyeza kitufe cha **"Endelea na Google"** (chenye rangi nyekundu, bluu, njano, na kijani).
 3. Chagua akaunti yako ya Google kutoka kwenye orodha.
 4. Ruhusu Kilimo AI kupata taarifa za msingi (jina na barua pepe) kwa kubonyeza **"Ruhusu / Allow"**.
-5. Utaelekezwa moja kwa moja kwenye dashibodi — hakuna hatua zaidi za uthibitisho!
+5. Utaelekezwa moja kwa moja kwenye dashibodi, hakuna hatua zaidi za uthibitisho!
 
 ---
 
@@ -193,8 +193,8 @@ Ikiwa umesahau nywila yako:
 1. Bonyeza **"Nimesahau Nywila"** kwenye ukurasa wa kuingia.
 2. Ingiza **barua pepe** ya akaunti yako.
 3. Bonyeza **"Tuma Barua Pepe ya Kufufua"**.
-4. Angalia barua pepe yako — utapata kiungo cha kubadilisha nywila.
-5. Bonyeza kiungo hicho — kitakupeleka kwenye ukurasa wa kuweka nywila mpya.
+4. Angalia barua pepe yako, utapata kiungo cha kubadilisha nywila.
+5. Bonyeza kiungo hicho, kitakupeleka kwenye ukurasa wa kuweka nywila mpya.
 6. Ingiza **nywila mpya** mara mbili ili kuthibitisha.
 7. Bonyeza **"Hifadhi Nywila Mpya"**.
 8. Unaweza sasa kuingia kwa nywila yako mpya.
@@ -227,9 +227,9 @@ Kukamilisha wasifu wako kunasaidia Kilimo AI kubinafsisha taarifa za hali ya hew
 #### Kupakia Picha ya Wasifu
 
 1. Kwenye ukurasa wa wasifu, bonyeza mduara wa picha juu ya ukurasa.
-2. Ukurasa utaomba ruhusa ya kufikia picha — ruhusu.
+2. Ukurasa utaomba ruhusa ya kufikia picha, ruhusu.
 3. Chagua picha kutoka kwenye galari yako.
-4. Subiri kidogo — upakiaji utaonyeshwa kwa asilimia.
+4. Subiri kidogo, upakiaji utaonyeshwa kwa asilimia.
 5. Picha mpya itaonekana mara baada ya kukamilika.
 
 > **Kumbuka:** Picha lazima iwe JPG au PNG na chini ya 2MB.
@@ -238,7 +238,7 @@ Kukamilisha wasifu wako kunasaidia Kilimo AI kubinafsisha taarifa za hali ya hew
 
 1. Kwenye ukurasa wa wasifu, tafuta sehemu ya **"Lugha Inayopendelewa"**.
 2. Bonyeza **"Kiswahili"** au **"English"** kulingana na upendeleo wako.
-3. Bonyeza **"Hifadhi Mabadiliko"** — mfumo utabadilisha lugha yake mara moja.
+3. Bonyeza **"Hifadhi Mabadiliko"**, mfumo utabadilisha lugha yake mara moja.
 
 ---
 
@@ -305,10 +305,10 @@ Msaidizi wa AI ndio kipengele kikuu cha Kilimo AI. Unafanywa kazi na mfano wa lu
 ### Jinsi ya Kuuliza Maswali
 
 1. Bonyeza **"Msaidizi wa AI"** kwenye dashibodi au menyu ya chini.
-2. Ukurasa wa mazungumzo utaonekana — msaidizi atakunyesha ujumbe wa salamu.
+2. Ukurasa wa mazungumzo utaonekana, msaidizi atakunyesha ujumbe wa salamu.
 3. Andika swali lako kwenye kisanduku cha maandishi chini ya skrini.
 4. Bonyeza kitufe cha **Tuma** (aikoni ya ndege wa karatasi) au bonyeza **Enter** kwenye kibodi.
-5. Subiri sekunde chache — msaidizi atajibu.
+5. Subiri sekunde chache, msaidizi atajibu.
 6. Unaweza kuendelea na mazungumzo kwa kuuliza maswali zaidi.
 
 ### Mifano ya Maswali kwa Kiswahili
@@ -316,8 +316,8 @@ Msaidizi wa AI ndio kipengele kikuu cha Kilimo AI. Unafanywa kazi na mfano wa lu
 Hapa kuna mifano ya maswali unayoweza kuuliza msaidizi:
 
 **Kuhusu Mazao:**
-- *"Mahindi yangu yana magonjwa ya majani ya njano — nifanye nini?"*
-- *"Nyanya zinazidi kupasuka baada ya mvua — tatizo ni nini?"*
+- *"Mahindi yangu yana magonjwa ya majani ya njano, nifanye nini?"*
+- *"Nyanya zinazidi kupasuka baada ya mvua, tatizo ni nini?"*
 - *"Mchele unahitaji maji kiasi gani kwa msimu?"*
 
 **Kuhusu Hali ya Hewa:**
@@ -325,7 +325,7 @@ Hapa kuna mifano ya maswali unayoweza kuuliza msaidizi:
 - *"Ninaweza kupanda mahindi sasa au nisubiri?"*
 
 **Kuhusu Magonjwa na Wadudu:**
-- *"Viwavi wanashambulia mahindi yangu usiku — dawa gani nitumie?"*
+- *"Viwavi wanashambulia mahindi yangu usiku, dawa gani nitumie?"*
 - *"Jinsi ya kuzuia magonjwa ya mchicha bila dawa za kemikali?"*
 
 **Kuhusu Bei za Masoko:**
@@ -334,7 +334,7 @@ Hapa kuna mifano ya maswali unayoweza kuuliza msaidizi:
 
 **Kuhusu Mbolea na Udongo:**
 - *"Ninaweza kutumia mbolea ya DAP na CAN pamoja?"*
-- *"Udongo wangu una chumvi nyingi — ninaweza kulima nini?"*
+- *"Udongo wangu una chumvi nyingi, ninaweza kulima nini?"*
 
 ### Mada Zinazofunikwa na AI
 
@@ -342,9 +342,9 @@ Msaidizi wa Kilimo AI anaweza kukusaidia kuhusu mada zifuatazo:
 
 - ✅ Kilimo cha mazao (kupanda, kutunza, kuvuna)
 - ✅ Magonjwa ya mazao na jinsi ya kuyatibu
-- ✅ Udhibiti wa wadudu — njia za asili na za kemikali
+- ✅ Udhibiti wa wadudu, njia za asili na za kemikali
 - ✅ Umwagiliaji na usimamizi wa maji
-- ✅ Mbolea — aina, kipimo, na wakati wa kutumia
+- ✅ Mbolea, aina, kipimo, na wakati wa kutumia
 - ✅ Afya ya udongo na jiolojia
 - ✅ Hali ya hewa na msimu wa kilimo
 - ✅ Bei za masoko na mikakati ya uuzaji
@@ -363,10 +363,10 @@ Msaidizi wa Kilimo AI **hatasaidia** kwenye mada zifuatazo (atakuelekezea kwenye
 
 Ili kupata majibu mazuri zaidi kutoka kwa msaidizi:
 
-1. **Kuwa maalum** — Badala ya "mazao yangu yana tatizo", sema "mahindi yangu yana madoa ya kahawia kwenye majani — ni magonjwa gani?"
-2. **Taja mkoa wako** — Hali ya kilimo inaweza kutofautiana kwa kanda. Sema "Mbeya" au "Kilimanjaro" kwa ushauri unaofaa zaidi.
-3. **Uliza hatua kwa hatua** — Kuuliza swali moja kwa wakati mmoja kunapata majibu ya kina zaidi.
-4. **Tumia Kiswahili** — Msaidizi ameandaliwa kutoa majibu bora zaidi kwa Kiswahili.
+1. **Kuwa maalum**, Badala ya "mazao yangu yana tatizo", sema "mahindi yangu yana madoa ya kahawia kwenye majani, ni magonjwa gani?"
+2. **Taja mkoa wako**, Hali ya kilimo inaweza kutofautiana kwa kanda. Sema "Mbeya" au "Kilimanjaro" kwa ushauri unaofaa zaidi.
+3. **Uliza hatua kwa hatua**, Kuuliza swali moja kwa wakati mmoja kunapata majibu ya kina zaidi.
+4. **Tumia Kiswahili**, Msaidizi ameandaliwa kutoa majibu bora zaidi kwa Kiswahili.
 
 ---
 
@@ -401,7 +401,7 @@ Kwa kila zao, unaweza kupata taarifa zifuatazo:
 | Taarifa | Mfano (Mahindi) |
 |---------|----------------|
 | 📅 Msimu wa Kupanda | Msimu wa mvua (Machi–Mei, Oktoba–Desemba) |
-| 💧 Mahitaji ya Maji | Wastani — lita 500–800 kwa msimu |
+| 💧 Mahitaji ya Maji | Wastani, lita 500–800 kwa msimu |
 | 🌡️ Joto Linalofaa | 18–30°C |
 | 📦 Mavuno Yanayotarajiwa | Tani 2–5 kwa ekari |
 | 🦠 Magonjwa Yanayojulikana | Maize streak virus, Gray leaf spot, Armyworm, Rust |
@@ -434,11 +434,11 @@ Sehemu ya Bei za Masoko inaonyesha bei za jumla za sasa za mazao makubwa katika 
 Kila zao linaonyeshwa kwenye kadi yake mwenyewe iliyo na:
 
 - **Jina la Zao** na emoji yake
-- **Bei ya Chini (Min)** — bei ndogo zaidi katika masoko yote
-- **Bei ya Juu (Max)** — bei kubwa zaidi katika masoko yote
+- **Bei ya Chini (Min)**, bei ndogo zaidi katika masoko yote
+- **Bei ya Juu (Max)**, bei kubwa zaidi katika masoko yote
 - **Kadi ndogo kwa kila soko** zinazoonyesha bei kwa soko hilo maalum
-- **Mstari mdogo wa rangi** — unaonyesha bei ya soko hilo ikilinganishwa na masoko mengine (mfupi = bei ndogo, mrefu = bei kubwa)
-- **Aikoni ya ↗️** — inaonyesha soko lenye bei ya juu zaidi
+- **Mstari mdogo wa rangi**, unaonyesha bei ya soko hilo ikilinganishwa na masoko mengine (mfupi = bei ndogo, mrefu = bei kubwa)
+- **Aikoni ya ↗️**, inaonyesha soko lenye bei ya juu zaidi
 
 ### Masoko Yanayofunikwa
 
@@ -502,7 +502,7 @@ Video zimegawanywa katika makundi (categories) ili iwe rahisi kupata unachotaka:
 
 Jinsi ya kuchuja:
 1. Kwenye ukurasa wa Elimu, angalia mstari wa vitufe vya kitengo juu.
-2. Bonyeza kitengo unachotaka — video zitachujwa moja kwa moja.
+2. Bonyeza kitengo unachotaka, video zitachujwa moja kwa moja.
 3. Bonyeza **"Zote"** kurudi kwenye orodha kamili.
 
 ---
@@ -525,7 +525,7 @@ Unaweza kusimamia vipengele vyote vya akaunti yako kutoka ukurasa wa Wasifu, iki
 2. Kwenye sehemu ya "Badilisha Nywila":
    - Ingiza **Nywila ya Sasa** yako.
    - Ingiza **Nywila Mpya** (lazima iwe na herufi 6+).
-   - **Thibitisha Nywila Mpya** — iiandike tena.
+   - **Thibitisha Nywila Mpya**, iiandike tena.
 3. Angalia nguvu ya nywila (Dhaifu / Wastani / Imara) kwenye mstari unaoonyeshwa.
 4. Bonyeza **"Badilisha Nywila"**.
 5. Utapata ujumbe wa mafanikio ikiwa nywila imebadilishwa.
@@ -537,12 +537,12 @@ Ikiwa ulijiandikisha kwa barua pepe na unataka pia kuingia kwa Google:
 1. Nenda kwenye **Wasifu → Sehemu ya Usalama**.
 2. Tafuta sehemu ya **"Akaunti Zilizounganishwa"**.
 3. Bonyeza **"Unganisha"** karibu na safu ya Google.
-4. Barua pepe ya Google itaonekana — thibitisha mara moja.
+4. Barua pepe ya Google itaonekana, thibitisha mara moja.
 5. Baadaye unaweza kuingia kwa njia yoyote (barua pepe au Google).
 
 ### Kufuta Akaunti
 
-> ⚠️ **Onyo Kali:** Kufuta akaunti yako ni hatua isiyoweza kubatilishwa. Data yako yote — mazungumzo, wasifu, na mapendeleo — itafutwa milele.
+> ⚠️ **Onyo Kali:** Kufuta akaunti yako ni hatua isiyoweza kubatilishwa. Data yako yote, mazungumzo, wasifu, na mapendeleo, itafutwa milele.
 
 Hatua za kufuta akaunti:
 
@@ -560,20 +560,20 @@ Hatua za kufuta akaunti:
 
 **Installing the App**
 
-Kilimo AI is a Progressive Web App (PWA), which means it can be installed directly from your browser — no App Store or Play Store required.
+Kilimo AI is a Progressive Web App (PWA), which means it can be installed directly from your browser, no App Store or Play Store required.
 
 ---
 
 **Kusanikisha Programu**
 
-Kilimo AI ni Programu Huru ya Wavuti (Progressive Web App — PWA), ikimaanisha inaweza kusanikiwa moja kwa moja kutoka kwenye kivinjari chako — bila hitaji la Duka la Programu.
+Kilimo AI ni Programu Huru ya Wavuti (Progressive Web App, PWA), ikimaanisha inaweza kusanikiwa moja kwa moja kutoka kwenye kivinjari chako, bila hitaji la Duka la Programu.
 
 ### Kwa Simu za Android (Google Chrome)
 
 1. Fungua **Google Chrome** kwenye simu yako ya Android.
 2. Nenda kwenye tovuti ya Kilimo AI.
 3. Ingia kwa akaunti yako.
-4. Utaona **ujumbe wa kufunguka chini ya skrini** ukisema "Ongeza Kilimo AI kwenye skrini yako ya nyumbani" — bonyeza **"Sanikisha"** au **"Install"**.
+4. Utaona **ujumbe wa kufunguka chini ya skrini** ukisema "Ongeza Kilimo AI kwenye skrini yako ya nyumbani", bonyeza **"Sanikisha"** au **"Install"**.
    - Ikiwa ujumbe hauonekani, bonyeza **vipande vitatu vya menyu** (⋮) juu kulia → chagua **"Ongeza kwenye skrini ya nyumbani"**.
 5. Thibitisha kusanikisha kwa kubonyeza **"Ongeza"**.
 6. Ikoni ya Kilimo AI itaonekana kwenye skrini yako ya nyumbani kama programu ya kawaida.
@@ -622,7 +622,7 @@ Sehemu hii inashughulikia matatizo ya kawaida ambayo watumiaji hukutana nayo na 
 |--|--|
 | **Tatizo** | Unatuma ujumbe lakini msaidizi hajibu au unaona hitilafu. |
 | **Sababu** | Msaidizi wa AI anahitaji API key ya Groq iliyowekwa vizuri, na muunganiko wa intaneti unaofanya kazi. |
-| **Suluhisho** | 1. Angalia muunganiko wako wa intaneti — fungua tovuti nyingine kuona inafunguka. 2. Onyesha upya ukurasa (refresh). 3. Subiri dakika 2–3 na ujaribu tena — huenda seva ya AI ilikuwa na msongamano. 4. Ikiwa tatizo linaendelea, wasiliana na msimamizi wa mfumo. |
+| **Suluhisho** | 1. Angalia muunganiko wako wa intaneti, fungua tovuti nyingine kuona inafunguka. 2. Onyesha upya ukurasa (refresh). 3. Subiri dakika 2–3 na ujaribu tena, huenda seva ya AI ilikuwa na msongamano. 4. Ikiwa tatizo linaendelea, wasiliana na msimamizi wa mfumo. |
 
 ---
 
@@ -642,7 +642,7 @@ Sehemu hii inashughulikia matatizo ya kawaida ambayo watumiaji hukutana nayo na 
 |--|--|
 | **Tatizo** | Ukurasa unabaki tupu au unaonyesha makosa ya kupakia. |
 | **Sababu** | Muunganiko dhaifu wa intaneti, tatizo la kivinjari, au seva imezimwa kwa muda. |
-| **Suluhisho** | 1. Bonyeza kitufe cha **Onyesha Upya** (↻) kwenye kivinjari au shikilia F5. 2. Futa kache ya kivinjari — kwenye Chrome: Ctrl+Shift+Delete → chagua "Picha na Faili Zilizohifadhiwa" → bonyeza "Futa". 3. Jaribu kutumia kivinjari tofauti. 4. Angalia muunganiko wako wa intaneti. 5. Jaribu tena baada ya dakika 10 — huenda mfumo unasasishwa. |
+| **Suluhisho** | 1. Bonyeza kitufe cha **Onyesha Upya** (↻) kwenye kivinjari au shikilia F5. 2. Futa kache ya kivinjari, kwenye Chrome: Ctrl+Shift+Delete → chagua "Picha na Faili Zilizohifadhiwa" → bonyeza "Futa". 3. Jaribu kutumia kivinjari tofauti. 4. Angalia muunganiko wako wa intaneti. 5. Jaribu tena baada ya dakika 10, huenda mfumo unasasishwa. |
 
 ---
 
@@ -693,12 +693,12 @@ Kilimo AI inakusanya taarifa zifuatazo unapojiandikisha na kutumia mfumo:
 
 ### Jinsi Data Inavyohifadhiwa
 
-Data yote ya Kilimo AI inahifadhiwa kwenye **Supabase** — jukwaa la hifadhidata la kisasa lenye usalama wa kiwango cha biashara:
+Data yote ya Kilimo AI inahifadhiwa kwenye **Supabase**, jukwaa la hifadhidata la kisasa lenye usalama wa kiwango cha biashara:
 
 - **Usimbaji (Encryption):** Data yote imesimbwa wakati wa kusafiri (HTTPS/TLS) na wakati wa kuhifadhiwa.
 - **Udhibiti wa Ufikiaji (Row Level Security):** Kila mtumiaji anaweza kuona na kuhariri data yake mwenyewe tu.
 - **Seva za EU/US:** Data inahifadhiwa kwenye seva salama zinazolingana na viwango vya kimataifa vya faragha.
-- **Nywila:** Nywila zako hazihifadhiwa kama maandishi wazi — zinahifadhiwa kama hash salama.
+- **Nywila:** Nywila zako hazihifadhiwa kama maandishi wazi, zinahifadhiwa kama hash salama.
 
 ### Haki za Mtumiaji
 
@@ -723,4 +723,4 @@ Vidokezo vya kulinda akaunti yako:
 *Mwongozo huu uliandaliwa Mei 2026 kwa ajili ya toleo la 1.0 la Kilimo AI.*  
 *This guide was prepared in May 2026 for Kilimo AI version 1.0.*
 
-*© 2026 Kilimo AI — Mradi wa Mwisho wa Chuo Kikuu / University Final Year Project*
+*© 2026 Kilimo AI, Mradi wa Mwisho wa Chuo Kikuu / University Final Year Project*

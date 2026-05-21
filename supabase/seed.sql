@@ -26,7 +26,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO educational_content (title, description, video_url, category, crop_name, language) VALUES
   (
     'Jinsi ya Kupanda Mahindi Tanzania',
-    'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo — kuandaa shamba, kupanda, na kutunza.',
+    'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo, kuandaa shamba, kupanda, na kutunza.',
     'https://www.youtube.com/watch?v=jNQXAC9IVRw',
     'kupanda', 'Mahindi', 'Kiswahili'
   ),

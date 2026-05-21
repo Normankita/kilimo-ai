@@ -1,5 +1,5 @@
 -- ============================================================
--- KILIMO APP — COMPLETE DATABASE SETUP
+-- KILIMO APP, COMPLETE DATABASE SETUP
 -- Run once in Supabase SQL Editor (Settings → SQL Editor)
 -- Safe to re-run: uses IF NOT EXISTS / DROP IF EXISTS / ADD COLUMN IF NOT EXISTS
 -- ============================================================
@@ -185,7 +185,7 @@ CREATE POLICY "conversations_own"
   WITH CHECK (auth.uid() = user_id);
 
 
--- ── 6. STORAGE — AVATARS BUCKET ─────────────────────────────────────────────
+-- ── 6. STORAGE, AVATARS BUCKET ─────────────────────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true)
@@ -254,7 +254,7 @@ WHERE NOT EXISTS (SELECT 1 FROM public.market_prices LIMIT 1);
 INSERT INTO public.educational_content (title, description, video_url, category, crop_name, language)
 SELECT * FROM (VALUES
   ('Jinsi ya Kupanda Mahindi Tanzania',
-   'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo — kuandaa shamba, kupanda, na kutunza.',
+   'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo, kuandaa shamba, kupanda, na kutunza.',
    'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'kupanda', 'Mahindi', 'Kiswahili'),
   ('Umwagiliaji Bora kwa Mboga',
    'Njia rahisi za kumwagilia mboga kwa matumizi ya maji kidogo lakini mavuno makubwa.',

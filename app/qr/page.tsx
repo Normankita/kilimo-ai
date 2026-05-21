@@ -105,7 +105,7 @@ export default function QRPage() {
           </button>
         </div>
 
-        {/* Attribution below card — hidden when printing */}
+        {/* Attribution below card, hidden when printing */}
         <p className="no-print text-xs mt-6" style={{ color: 'var(--text-muted)' }}>
           © 2026 Kilimo AI · Haki zote zimehifadhiwa
         </p>

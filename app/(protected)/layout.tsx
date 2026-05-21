@@ -9,22 +9,15 @@ export default async function ProtectedLayout({ children }: { children: React.Re
 
   if (!user) redirect('/login')
 
-  // Redirect admins to the admin panel
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role === 'admin' || profile?.role === 'super_admin') {
-    redirect('/admin')
-  }
+  // Note: admins & super_admins can access the farmer app freely.
+  // The /admin route group has its own access gate in app/admin/layout.tsx.
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
       <Navbar />
-      <main className="md:ml-56 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
-        <div className="max-w-3xl mx-auto p-4 md:p-6">
+      {/* pt-14 = navbar height (h-14). pb-20 = mobile bottom tab bar. */}
+      <main className="pt-14 pb-20 md:pb-6 min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           <PageWrapper>{children}</PageWrapper>
         </div>
       </main>

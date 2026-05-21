@@ -13,21 +13,25 @@ import {
 import { LandingWalkthroughModal } from '@/components/tutorial/landing-walkthrough-modal'
 
 const FEATURES = [
-  { icon: MessageSquare, color: '#2a5c3f', bgLight: '#edf4ef', bgDark: '#1a2d20',
+  {
+    icon: MessageSquare, color: '#2a5c3f', bgLight: '#edf4ef', bgDark: '#1a2d20',
     sw: { title: 'Msaidizi wa AI', desc: 'Uliza maswali ya kilimo na kupata majibu ya haraka kwa Kiswahili.' },
-    en: { title: 'AI Assistant',   desc: 'Ask farming questions and get instant answers in Swahili.' },
+    en: { title: 'AI Assistant', desc: 'Ask farming questions and get instant answers in Swahili.' },
   },
-  { icon: Cloud, color: '#1c6a9e', bgLight: '#e8f3fb', bgDark: '#0f2030',
-    sw: { title: 'Hali ya Hewa',   desc: 'Angalia hali ya hewa ya eneo lako na mipango ya kilimo.' },
-    en: { title: 'Live Weather',   desc: 'Check your local weather and plan your farm activities.' },
+  {
+    icon: Cloud, color: '#1c6a9e', bgLight: '#e8f3fb', bgDark: '#0f2030',
+    sw: { title: 'Hali ya Hewa', desc: 'Angalia hali ya hewa ya eneo lako na mipango ya kilimo.' },
+    en: { title: 'Live Weather', desc: 'Check your local weather and plan your farm activities.' },
   },
-  { icon: TrendingUp, color: '#7c5c14', bgLight: '#fdf6e3', bgDark: '#1e1804',
-    sw: { title: 'Bei za Soko',    desc: 'Jua bei za mazao katika masoko makuu ya Tanzania.' },
-    en: { title: 'Market Prices',  desc: 'Know crop prices across major Tanzanian markets.' },
+  {
+    icon: TrendingUp, color: '#7c5c14', bgLight: '#fdf6e3', bgDark: '#1e1804',
+    sw: { title: 'Bei za Soko', desc: 'Jua bei za mazao katika masoko makuu ya Tanzania.' },
+    en: { title: 'Market Prices', desc: 'Know crop prices across major Tanzanian markets.' },
   },
-  { icon: GraduationCap, color: '#5a3a6e', bgLight: '#f3eef8', bgDark: '#1e1028',
+  {
+    icon: GraduationCap, color: '#5a3a6e', bgLight: '#f3eef8', bgDark: '#1e1028',
     sw: { title: 'Elimu ya Kilimo', desc: 'Tazama video na makala ya kilimo bora kwa Kiswahili.' },
-    en: { title: 'Education',       desc: 'Watch farming videos and guides in Swahili.' },
+    en: { title: 'Education', desc: 'Watch farming videos and guides in Swahili.' },
   },
 ]
 
@@ -128,7 +132,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
               style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)', color: 'var(--primary)' }}>
               <Sprout className="h-3.5 w-3.5" />
-              {sw ? 'Teknolojia ya Kilimo — Tanzania' : 'Smart Farming Technology — Tanzania'}
+              {sw ? 'Teknolojia ya Kilimo, Tanzania' : 'Smart Farming Technology, Tanzania'}
             </span>
           </motion.div>
 
@@ -148,8 +152,8 @@ export default function LandingPage() {
             {...fade(0.12)}
           >
             {sw
-              ? 'Msaidizi wa kilimo wa kiteknolojia kwa wakulima wadogo Tanzania. Pata ushauri wa AI, bei za soko, na mafunzo — yote bila malipo.'
-              : 'A smart agriculture assistant for Tanzanian smallholder farmers. Get AI advice, market prices, and education — all for free.'}
+              ? 'Msaidizi wa kilimo wa kiteknolojia kwa wakulima wadogo Tanzania. Pata ushauri wa AI, bei za soko, na mafunzo, yote bila malipo.'
+              : 'A smart agriculture assistant for Tanzanian smallholder farmers. Get AI advice, market prices, and education, all for free.'}
           </motion.p>
 
           <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" {...fade(0.18)}>

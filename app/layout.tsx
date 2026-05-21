@@ -4,7 +4,7 @@ import InstallPrompt from '@/components/ui/install-prompt'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Kilimo AI — Msaada wa Kilimo Tanzania',
+  title: 'Kilimo AI, Msaada wa Kilimo Tanzania',
   description: 'Msaidizi wa kilimo kwa wakulima wadogo Tanzania',
   manifest: '/manifest.json',
   icons: {

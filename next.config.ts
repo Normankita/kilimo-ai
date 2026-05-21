@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next'
 
-// next-pwa is a CommonJS package — require() is available at runtime via @types/node
+// next-pwa is a CommonJS package, require() is available at runtime via @types/node
 // Disabled in development to prevent service-worker caching from interfering with HMR
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const withPWA = (require('next-pwa') as (opts: object) => (cfg: NextConfig) => NextConfig)({

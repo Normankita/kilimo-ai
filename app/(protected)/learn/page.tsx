@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayCircle, ExternalLink, BookOpen } from 'lucide-react'
 
 const SEED = [
-  { id: 1, title: 'Jinsi ya Kupanda Mahindi Tanzania', description: 'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo — kuandaa shamba, kupanda, na kutunza.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'kupanda', crop_name: 'Mahindi', language: 'Kiswahili' },
+  { id: 1, title: 'Jinsi ya Kupanda Mahindi Tanzania', description: 'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo, kuandaa shamba, kupanda, na kutunza.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'kupanda', crop_name: 'Mahindi', language: 'Kiswahili' },
   { id: 2, title: 'Umwagiliaji Bora kwa Mboga', description: 'Njia rahisi za kumwagilia mboga kwa matumizi ya maji kidogo lakini mavuno makubwa.', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'umwagiliaji', crop_name: 'Mboga', language: 'Kiswahili' },
   { id: 3, title: 'Magonjwa ya Nyanya na Jinsi ya Kuyatibu', description: 'Tambua magonjwa ya nyanya mapema na uchague dawa sahihi za asili na za duka.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'magonjwa', crop_name: 'Nyanya', language: 'Kiswahili' },
   { id: 4, title: 'Kulinda Mazao dhidi ya Wadudu', description: 'Mbinu za asili na za kisayansi za kupigana na viwavi, nzi, na wadudu wengine.', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'magonjwa', crop_name: 'Mazao Mengi', language: 'Kiswahili' },
@@ -16,10 +16,10 @@ const SEED = [
 ]
 
 const CATEGORY_META: Record<string, { label: string; labelEn: string; color: string }> = {
-  all:         { label: 'Zote',        labelEn: 'All',         color: 'var(--primary)' },
-  kupanda:     { label: 'Kupanda',     labelEn: 'Planting',    color: '#5a6e3a' },
-  umwagiliaji: { label: 'Umwagiliaji', labelEn: 'Irrigation',  color: '#2a5878' },
-  magonjwa:    { label: 'Magonjwa',    labelEn: 'Diseases',    color: '#7c2020' },
+  all: { label: 'Zote', labelEn: 'All', color: 'var(--primary)' },
+  kupanda: { label: 'Kupanda', labelEn: 'Planting', color: '#5a6e3a' },
+  umwagiliaji: { label: 'Umwagiliaji', labelEn: 'Irrigation', color: '#2a5878' },
+  magonjwa: { label: 'Magonjwa', labelEn: 'Diseases', color: '#7c2020' },
 }
 
 function getYouTubeId(url: string) {

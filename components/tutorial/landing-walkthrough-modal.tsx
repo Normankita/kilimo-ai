@@ -23,7 +23,7 @@ const STEPS = [
     title: 'Weka Shamba Lako',
     emoji: '🌱',
     description:
-      'Ongeza taarifa za shamba lako — eneo, mazao, na hali ya udongo. Hii itasaidia AI kukupa ushauri unaofaa.',
+      'Ongeza taarifa za shamba lako, eneo, mazao, na hali ya udongo. Hii itasaidia AI kukupa ushauri unaofaa.',
   },
   {
     icon: Zap,

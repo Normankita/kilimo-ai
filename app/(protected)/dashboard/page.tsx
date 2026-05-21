@@ -12,11 +12,11 @@ import { MessageSquare, Sprout, TrendingUp, GraduationCap, ArrowRight } from 'lu
 import { DashboardTour } from '@/components/tutorial/dashboard-tour'
 
 const FALLBACK_PRICES = [
-  { crop_name: 'Mahindi',   price_per_kg: 650,  market_location: 'Dar es Salaam' },
-  { crop_name: 'Mchele',    price_per_kg: 1800, market_location: 'Dar es Salaam' },
-  { crop_name: 'Nyanya',    price_per_kg: 800,  market_location: 'Dar es Salaam' },
-  { crop_name: 'Maharage',  price_per_kg: 1400, market_location: 'Dar es Salaam' },
-  { crop_name: 'Vitunguu',  price_per_kg: 500,  market_location: 'Dar es Salaam' },
+  { crop_name: 'Mahindi', price_per_kg: 650, market_location: 'Dar es Salaam' },
+  { crop_name: 'Mchele', price_per_kg: 1800, market_location: 'Dar es Salaam' },
+  { crop_name: 'Nyanya', price_per_kg: 800, market_location: 'Dar es Salaam' },
+  { crop_name: 'Maharage', price_per_kg: 1400, market_location: 'Dar es Salaam' },
+  { crop_name: 'Vitunguu', price_per_kg: 500, market_location: 'Dar es Salaam' },
 ]
 
 const CARD_VARIANTS: Variants = {
@@ -58,10 +58,10 @@ export default function DashboardPage() {
   const location = user?.location ?? 'Dodoma'
 
   const shortcuts = [
-    { href: '/assistant', label: t.dashboard.shortcutAI,      desc: t.dashboard.shortcutAIDesc,      icon: MessageSquare, color: 'var(--primary)' },
-    { href: '/crops',     label: t.dashboard.shortcutCrops,   desc: t.dashboard.shortcutCropsDesc,   icon: Sprout,        color: '#5a6e3a' },
-    { href: '/market',    label: t.dashboard.shortcutMarket,  desc: t.dashboard.shortcutMarketDesc,  icon: TrendingUp,    color: '#2a5878' },
-    { href: '/learn',     label: t.dashboard.shortcutLearn,   desc: t.dashboard.shortcutLearnDesc,   icon: GraduationCap, color: '#5a3a6e' },
+    { href: '/assistant', label: t.dashboard.shortcutAI, desc: t.dashboard.shortcutAIDesc, icon: MessageSquare, color: 'var(--primary)' },
+    { href: '/crops', label: t.dashboard.shortcutCrops, desc: t.dashboard.shortcutCropsDesc, icon: Sprout, color: '#5a6e3a' },
+    { href: '/market', label: t.dashboard.shortcutMarket, desc: t.dashboard.shortcutMarketDesc, icon: TrendingUp, color: '#2a5878' },
+    { href: '/learn', label: t.dashboard.shortcutLearn, desc: t.dashboard.shortcutLearnDesc, icon: GraduationCap, color: '#5a3a6e' },
   ]
 
   return (
@@ -74,7 +74,7 @@ export default function DashboardPage() {
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t.dashboard.subtitle}</p>
       </motion.div>
 
-      {/* Weather — slides in from the left */}
+      {/* Weather, slides in from the left */}
       <motion.div
         id="weather-widget"
         initial={reduced ? {} : { opacity: 0, x: -20 }}
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-          {t.dashboard.weather} — {location}
+          {t.dashboard.weather}, {location}
         </p>
         <WeatherWidget location={`${location},TZ`} />
       </motion.div>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Market prices — slides in from the right */}
+      {/* Market prices, slides in from the right */}
       <motion.div
         id="market-prices-widget"
         initial={reduced ? {} : { opacity: 0, x: 20 }}

@@ -99,7 +99,7 @@ export const translations = {
     },
     market: {
       title: 'Bei za Soko',
-      subtitle: 'Matoleo ya hivi karibuni — TZS kwa kilo moja',
+      subtitle: 'Matoleo ya hivi karibuni, TZS kwa kilo moja',
       warning: 'Bei hizi ni mwongozo. Thibitisha na wafanyabiashara wa eneo lako.',
       tip: 'Ushauri wa Soko',
       tipText: 'Uuze mazao yako mara tu bei ni nzuri. Ukilinda bidhaa nyumbani, angalia bei mara kwa mara na uhifadhi vizuri ili kupunguza upotevu.',
@@ -221,7 +221,7 @@ export const translations = {
     },
     market: {
       title: 'Market Prices',
-      subtitle: 'Latest prices — TZS per kilogram',
+      subtitle: 'Latest prices, TZS per kilogram',
       warning: 'These prices are a guide. Confirm with local traders.',
       tip: 'Market Tip',
       tipText: 'Sell your crops when prices are good. If storing at home, check prices regularly and store properly to reduce losses.',
