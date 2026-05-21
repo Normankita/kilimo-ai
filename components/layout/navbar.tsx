@@ -251,7 +251,7 @@ export default function Navbar() {
         </div>
 
         {/* Sign out */}
-        <div classNa,="p-2">
+        <div className="p-2">
         <button
           onClick={() => { setDropOpen(false); handleLogout() }}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
