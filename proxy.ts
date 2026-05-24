@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -25,24 +25,19 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password']
-  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  const pathname = request.nextUrl.pathname
 
-  if (!user && !isPublicPath && request.nextUrl.pathname !== '/') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+  // Auth pages: redirect signed-in users to dashboard
+  const authPages = ['/login', '/register', '/forgot-password', '/reset-password']
+  const isAuthPage = authPages.some(p => pathname.startsWith(p))
 
-  if (user && isPublicPath) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  if (user && isAuthPage) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|auth|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
