@@ -34,7 +34,7 @@ export default function AdminNavbar({ role, name, email }: Props) {
   const RoleIcon = roleMeta.icon
 
   // Links available to all admins
-  const baseLinks = [
+  const baseLinks: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
     { href: '/admin',         label: 'Dashboard',     icon: LayoutDashboard, exact: true },
     { href: '/admin/market',  label: 'Market Prices', icon: TrendingUp },
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
@@ -42,7 +42,7 @@ export default function AdminNavbar({ role, name, email }: Props) {
   ]
 
   // Super-admin only
-  const superLinks = [
+  const superLinks: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
     { href: '/admin/users', label: 'Users', icon: Users },
   ]
 
