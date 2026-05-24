@@ -23,9 +23,16 @@ export default async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
-
   const pathname = request.nextUrl.pathname
+  const code = request.nextUrl.searchParams.get('code')
+
+  // Forward OAuth code to the callback handler when Supabase redirects to /login
+  // instead of /auth/callback (happens when /auth/callback isn't in the Supabase allowlist)
+  if (pathname === '/login' && code) {
+    return NextResponse.redirect(new URL(`/auth/callback?code=${code}`, request.url))
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Auth pages: redirect signed-in users to dashboard
   const authPages = ['/login', '/register', '/forgot-password', '/reset-password']
