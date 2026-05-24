@@ -336,6 +336,22 @@ export default function Navbar() {
           {/* ── Right side: profile pill + mobile hamburger ───────── */}
           <div className="ml-auto flex items-center gap-2 shrink-0">
 
+            {/* Admin shortcut — visible to admin / super_admin */}
+            {(navProfile?.role === 'admin' || navProfile?.role === 'super_admin') && (
+              <Link
+                href="/admin"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: `${roleMeta.color}22`,
+                  color: roleMeta.color,
+                  border: `1px solid ${roleMeta.color}44`,
+                }}
+              >
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                {navProfile.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+              </Link>
+            )}
+
             {/* Profile avatar + name pill — the dropdown trigger */}
             <div className="relative" ref={dropRef}>
               <button
@@ -438,6 +454,18 @@ export default function Navbar() {
             </Link>
           )
         })}
+
+        {/* Admin tab — only for admin / super_admin */}
+        {(navProfile?.role === 'admin' || navProfile?.role === 'super_admin') && (
+          <Link
+            href="/admin"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-semibold transition-colors"
+            style={{ color: roleMeta.color }}
+          >
+            <ShieldCheck className="h-5 w-5" />
+            {navProfile.role === 'super_admin' ? 'S.Admin' : 'Admin'}
+          </Link>
+        )}
       </nav>
     </>
   )
