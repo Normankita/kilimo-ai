@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kilimo AI
+
+A smart agriculture assistant built for Tanzanian smallholder farmers. Get AI-powered farming advice, live market prices, weather forecasts, and educational content — all in Swahili and English, completely free.
+
+## Features
+
+- **AI Assistant** — Ask farming questions and get instant advice powered by Google Gemini AI
+- **Live Weather** — Real-time weather forecasts tailored to your farm location
+- **Market Prices** — Up-to-date crop prices from major Tanzanian markets
+- **Crop Management** — Track and manage your crops in one place
+- **Education** — Farming guides and video content in Swahili
+- **PWA Support** — Installable on Android and iPhone, works offline
+- **Bilingual** — Full Swahili and English support
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| UI Components | Radix UI + shadcn/ui |
+| Auth & Database | Supabase |
+| AI | Google Gemini AI |
+| Animations | Framer Motion |
+| PWA | next-pwa |
+| Icons | Lucide React |
+| Theming | next-themes |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- A [Google AI Studio](https://aistudio.google.com) API key (Gemini)
+- An [OpenWeather](https://openweathermap.org/api) API key
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Dev-Norman/kilimo-app.git
+cd kilimo-app
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Copy the environment variables file and fill in your keys:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+NEXT_PUBLIC_WEATHER_API_KEY=your_openweather_api_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+kilimo-app/
+├── app/
+│   ├── (protected)/          # Authenticated routes
+│   │   ├── assistant/        # AI chat assistant
+│   │   ├── crops/            # Crop management
+│   │   ├── dashboard/        # Main dashboard
+│   │   ├── learn/            # Education content
+│   │   └── market/           # Market prices
+│   ├── admin/                # Admin panel
+│   ├── api/                  # API routes (chat, weather, etc.)
+│   ├── login/
+│   ├── register/
+│   └── profile/
+├── components/               # Shared UI components
+├── lib/                      # Utilities, contexts, Supabase client
+└── public/                   # Static assets
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Creator
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Norman Kita**
+- Email: [kitanorman1@gmail.com](mailto:kitanorman1@gmail.com)
+- Portfolio: [norman-kita.vercel.app](https://norman-kita.vercel.app)
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+© 2026 Kilimo AI. All rights reserved.
