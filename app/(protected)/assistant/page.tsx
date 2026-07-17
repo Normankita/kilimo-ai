@@ -76,23 +76,26 @@ export default function AssistantPage() {
   return (
     <div className="relative flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] -m-4 md:-m-6">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b"
+      <div className="px-4 py-3 border-b"
         style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
-        <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--primary)' }}>
-          <Sprout className="h-4 w-4 text-white" />
-        </div>
-        <div>
-          <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{t.assistant.title}</p>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.assistant.subtitle}</p>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--primary)' }}>
+            <Sprout className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{t.assistant.title}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.assistant.subtitle}</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div id="assistant-messages" className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+      <div id="assistant-messages" className="flex-1 overflow-y-auto px-4 py-4"
         style={{ backgroundColor: 'var(--surface-2)' }}>
+        <div className="max-w-3xl mx-auto space-y-3">
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => (
             <motion.div
@@ -169,12 +172,13 @@ export default function AssistantPage() {
         )}
 
         <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Suggestions (first message only) */}
       {messages.length === 1 && !loading && (
         <div className="px-4 py-2" style={{ backgroundColor: 'var(--surface-2)' }}>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="max-w-3xl mx-auto flex gap-2 overflow-x-auto pb-1">
             {t.assistant.suggestions.map((s, i) => (
               <motion.button
                 key={i}
@@ -194,21 +198,23 @@ export default function AssistantPage() {
       {/* Input */}
       <form
         onSubmit={e => { e.preventDefault(); sendMessage(input) }}
-        className="flex gap-2 px-4 py-3 border-t"
+        className="px-4 py-3 border-t"
         style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
       >
-        <Input
-          id="assistant-chat-input"
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder={t.assistant.placeholder}
-          disabled={loading}
-          className="flex-1"
-        />
-        <Button id="assistant-send-button" type="submit" disabled={loading || !input.trim()} size="icon">
-          <Send className="h-4 w-4" />
-        </Button>
+        <div className="max-w-3xl mx-auto flex gap-2">
+          <Input
+            id="assistant-chat-input"
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder={t.assistant.placeholder}
+            disabled={loading}
+            className="flex-1"
+          />
+          <Button id="assistant-send-button" type="submit" disabled={loading || !input.trim()} size="icon">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </form>
 
       <AssistantTour />

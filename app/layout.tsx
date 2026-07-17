@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sw" suppressHydrationWarning className="h-full">
+    <html lang="sw" suppressHydrationWarning className="h-full" data-scroll-behavior="smooth">
       <body className="min-h-full">
         <Providers>{children}</Providers>
         <InstallPrompt />

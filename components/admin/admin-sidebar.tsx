@@ -28,14 +28,14 @@ export default function AdminSidebar({ role, name, email }: Props) {
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // This sidebar is only ever rendered for super_admin — plain admins use the
+  // merged farmer Navbar (see app/profile/layout.tsx).
   const links = [
     { href: '/admin',         label: 'Dashboard',    icon: LayoutDashboard, exact: true },
+    { href: '/admin/users',   label: 'Users',        icon: Users },
     { href: '/admin/market',  label: 'Market Prices', icon: TrendingUp },
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
-    ...(role === 'super_admin'
-      ? [{ href: '/admin/users', label: 'Users', icon: Users }]
-      : []),
   ]
 
   function isActive(href: string, exact?: boolean) {

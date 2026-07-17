@@ -92,7 +92,7 @@ export default function CropsPage() {
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t.crops.subtitle}</p>
       </motion.div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
         {CROPS.map((crop, i) => (
           <motion.div
             key={crop.name}

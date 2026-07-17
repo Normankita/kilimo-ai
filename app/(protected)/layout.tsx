@@ -14,10 +14,10 @@ export default async function ProtectedLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      <Navbar />
+      <Navbar containerClassName="max-w-[1600px]" />
       {/* pt-14 = navbar height (h-14). pb-20 = mobile bottom tab bar. */}
       <main className="pt-14 pb-20 md:pb-6 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-6">
           <PageWrapper>{children}</PageWrapper>
         </div>
       </main>

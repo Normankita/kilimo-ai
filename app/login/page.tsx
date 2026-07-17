@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { fetchOrCreateProfile, roleRedirectPath } from '@/lib/profile'
@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Sprout, AlertCircle, Mail } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
-type ErrorType = 'credentials' | 'unconfirmed' | 'generic' | null
+type ErrorType = 'credentials' | 'unconfirmed' | 'generic' | 'deactivated' | null
 
 function GoogleIcon() {
   return (
@@ -26,8 +26,9 @@ function GoogleIcon() {
   )
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t, lang, setLang } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,6 +37,10 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('deactivated') === '1') setErrorType('deactivated')
+  }, [searchParams])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -83,9 +88,10 @@ export default function LoginPage() {
   }
 
   const errorMsg =
-    errorType === 'credentials' ? t.auth.wrongCredentials :
-    errorType === 'unconfirmed' ? t.auth.emailNotConfirmed :
-    errorType === 'generic'     ? t.auth.wrongCredentials : null
+    errorType === 'credentials'  ? t.auth.wrongCredentials :
+    errorType === 'unconfirmed'  ? t.auth.emailNotConfirmed :
+    errorType === 'deactivated'  ? (lang === 'sw' ? 'Akaunti yako imezimwa. Wasiliana na msimamizi.' : 'Your account has been deactivated. Contact an administrator.') :
+    errorType === 'generic'      ? t.auth.wrongCredentials : null
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4"
@@ -188,5 +194,13 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }

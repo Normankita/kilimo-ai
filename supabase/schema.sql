@@ -30,7 +30,45 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS farm_location      text,
   ADD COLUMN IF NOT EXISTS bio                text,
   ADD COLUMN IF NOT EXISTS preferred_language text DEFAULT 'sw',
-  ADD COLUMN IF NOT EXISTS avatar_url         text;
+  ADD COLUMN IF NOT EXISTS avatar_url         text,
+  ADD COLUMN IF NOT EXISTS is_active          boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS last_active_at     timestamptz,
+  ADD COLUMN IF NOT EXISTS first_active_at    timestamptz;
+
+-- Backfill profiles.email for any row left null (e.g. rows created directly in
+-- the SQL editor / dashboard rather than through the app's signup flow).
+-- auth.users always has an email, profiles.email is just a denormalized copy.
+UPDATE public.profiles p
+SET email = u.email
+FROM auth.users u
+WHERE p.id = u.id AND (p.email IS NULL OR p.email = '');
+
+-- Best-effort backfill for first_active_at on rows that were already active
+-- before this column existed: we never recorded a real "first seen" for them,
+-- so approximate it with created_at (closest thing we have to "day one").
+-- Going forward, the trigger below sets this exactly, once, per user.
+UPDATE public.profiles
+SET first_active_at = created_at
+WHERE first_active_at IS NULL AND last_active_at IS NOT NULL;
+
+-- Lock in first_active_at the first time last_active_at is ever set for a
+-- user (i.e. their first presence heartbeat), and never touch it again.
+CREATE OR REPLACE FUNCTION public.set_first_active_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.last_active_at IS DISTINCT FROM OLD.last_active_at AND OLD.first_active_at IS NULL THEN
+    NEW.first_active_at := NEW.last_active_at;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_set_first_active_at ON public.profiles;
+CREATE TRIGGER profiles_set_first_active_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.set_first_active_at();
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -40,6 +78,7 @@ DROP POLICY IF EXISTS "profiles_insert_own"         ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_own"         ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_admin"       ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_super_admin" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_privileged"  ON public.profiles;
 
 -- Helper function: reads role without touching RLS (SECURITY DEFINER bypasses it)
 CREATE OR REPLACE FUNCTION public.get_my_role()
@@ -69,9 +108,42 @@ CREATE POLICY "profiles_select_admin"
   ON public.profiles FOR SELECT
   USING (get_my_role() IN ('admin', 'super_admin'));
 
-CREATE POLICY "profiles_update_super_admin"
+-- Admins and super_admins may reach other users' rows at the RLS layer;
+-- the guard_profile_privileged_fields trigger below enforces the actual
+-- business rules for *which* rows/fields each role may change.
+CREATE POLICY "profiles_update_privileged"
   ON public.profiles FOR UPDATE
-  USING (get_my_role() = 'super_admin');
+  USING (get_my_role() IN ('admin', 'super_admin'));
+
+-- Guard who can change `role` / `is_active`, regardless of which RLS policy
+-- allowed the UPDATE through (closes the gap where profiles_update_own has
+-- no column-level restriction).
+CREATE OR REPLACE FUNCTION public.guard_profile_privileged_fields()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF (NEW.role IS DISTINCT FROM OLD.role) OR (NEW.is_active IS DISTINCT FROM OLD.is_active) THEN
+    IF NEW.id = auth.uid() THEN
+      RAISE EXCEPTION 'Cannot change your own role or active status';
+    ELSIF public.get_my_role() = 'admin' AND OLD.role <> 'farmer' THEN
+      RAISE EXCEPTION 'Admins may only manage farmer accounts';
+    ELSIF public.get_my_role() NOT IN ('admin', 'super_admin') THEN
+      RAISE EXCEPTION 'Not authorized to change role or active status';
+    ELSIF public.get_my_role() = 'super_admin' AND OLD.role = 'super_admin' THEN
+      RAISE EXCEPTION 'Super admins cannot manage other super admins';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_guard_privileged_fields ON public.profiles;
+CREATE TRIGGER profiles_guard_privileged_fields
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.guard_profile_privileged_fields();
 
 
 -- ── 2. MARKET PRICES ────────────────────────────────────────────────────────

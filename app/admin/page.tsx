@@ -1,14 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { Users, TrendingUp, PlaySquare, Leaf, Clock } from 'lucide-react'
+import { Users, TrendingUp, PlaySquare, Leaf, Clock, Circle, ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { isOnline } from '@/lib/utils'
+
+const QUICK_LINKS = [
+  { href: '/admin/users',   label: 'Manage Farmers', description: 'Search, edit, activate/deactivate accounts', icon: Users,      color: 'var(--primary)' },
+  { href: '/admin/market',  label: 'Market Prices',  description: 'Add or edit crop price entries',              icon: TrendingUp, color: '#1c6a9e' },
+  { href: '/admin/content', label: 'Education',      description: 'Manage educational videos',                  icon: PlaySquare, color: '#5a3a6e' },
+  { href: '/admin/crops',   label: 'Crop Info',      description: 'Manage crop reference data',                 icon: Leaf,       color: '#5a6e3a' },
+]
 
 interface Stats {
   farmers: number
   admins: number
+  farmersOnline: number
+  adminsOnline: number
   marketEntries: number
   videos: number
   cropInfo: number
@@ -22,6 +33,8 @@ interface RecentPrice {
 }
 
 const statCards = (s: Stats) => [
+  { label: 'Farmers Online Now', value: s.farmersOnline, icon: Circle, color: '#10b981' },
+  { label: 'Admins Online Now',  value: s.adminsOnline,  icon: Circle, color: '#10b981' },
   { label: 'Total Farmers', value: s.farmers, icon: Users,       color: 'var(--primary)' },
   { label: 'Admins',        value: s.admins,  icon: Users,       color: '#7c3aed' },
   { label: 'Market Entries',value: s.marketEntries, icon: TrendingUp, color: '#1c6a9e' },
@@ -30,7 +43,7 @@ const statCards = (s: Stats) => [
 ]
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<Stats>({ farmers: 0, admins: 0, marketEntries: 0, videos: 0, cropInfo: 0 })
+  const [stats, setStats] = useState<Stats>({ farmers: 0, admins: 0, farmersOnline: 0, adminsOnline: 0, marketEntries: 0, videos: 0, cropInfo: 0 })
   const [recent, setRecent] = useState<RecentPrice[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -39,18 +52,20 @@ export default function AdminDashboardPage() {
 
     async function load() {
       const [profiles, market, videos, crops] = await Promise.all([
-        supabase.from('profiles').select('role'),
+        supabase.from('profiles').select('role, last_active_at'),
         supabase.from('market_prices').select('id', { count: 'exact', head: true }),
         supabase.from('educational_content').select('id', { count: 'exact', head: true }),
         supabase.from('crop_info').select('id', { count: 'exact', head: true }),
       ])
 
-      const farmers = profiles.data?.filter(p => p.role === 'farmer').length ?? 0
-      const admins  = profiles.data?.filter(p => p.role !== 'farmer').length ?? 0
+      const farmerRows = profiles.data?.filter(p => p.role === 'farmer') ?? []
+      const adminRows  = profiles.data?.filter(p => p.role !== 'farmer') ?? []
 
       setStats({
-        farmers,
-        admins,
+        farmers: farmerRows.length,
+        admins: adminRows.length,
+        farmersOnline: farmerRows.filter(p => isOnline(p.last_active_at)).length,
+        adminsOnline: adminRows.filter(p => isOnline(p.last_active_at)).length,
         marketEntries: market.count ?? 0,
         videos: videos.count ?? 0,
         cropInfo: crops.count ?? 0,
@@ -76,8 +91,28 @@ export default function AdminDashboardPage() {
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Overview of all platform data</p>
       </div>
 
+      {/* Quick links to admin tools */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {QUICK_LINKS.map(({ href, label, description, icon: Icon, color }) => (
+          <Link key={href} href={href}>
+            <Card className="h-full transition-transform hover:-translate-y-0.5">
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}18` }}>
+                  <Icon className="h-4.5 w-4.5" style={{ color }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 mt-1" style={{ color: 'var(--text-muted)' }} />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
       {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {statCards(stats).map((s, i) => (
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}

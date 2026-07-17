@@ -17,21 +17,21 @@ export default async function ProfileLayout({ children }: { children: React.Reac
     .eq('id', user.id)
     .single()
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
+  const isSuperAdmin = profile?.role === 'super_admin'
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      {isAdmin ? (
+      {isSuperAdmin ? (
         <AdminSidebar
           role={profile!.role as UserRole}
           name={profile!.full_name}
           email={profile!.email ?? user.email}
         />
       ) : (
-        <Navbar />
+        <Navbar containerClassName="max-w-[1600px]" />
       )}
-      <main className={isAdmin ? 'md:ml-56 pb-20 md:pb-0 min-h-screen' : 'pt-14 pb-20 md:pb-6 min-h-screen'}>
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+      <main className={isSuperAdmin ? 'md:ml-56 pb-20 md:pb-0 min-h-screen' : 'pt-14 pb-20 md:pb-6 min-h-screen'}>
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-6">
           <PageWrapper>{children}</PageWrapper>
         </div>
       </main>

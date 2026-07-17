@@ -9,6 +9,7 @@ import {
   Sprout, LayoutDashboard, MessageSquare, TrendingUp,
   GraduationCap, LogOut, Menu, X, Languages, Sun, Moon,
   Monitor, User, QrCode, ChevronDown, ShieldCheck, Wheat,
+  Users, PlaySquare, Leaf,
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,7 +26,23 @@ const ROLE_META: Record<string, { label: string; color: string; icon: React.Elem
   super_admin: { label: 'Super Admin', color: '#a855f7', icon: ShieldCheck },
 }
 
-export default function Navbar() {
+const ADMIN_TOOL_LINKS = [
+  { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+  { href: '/admin/users', label: 'Manage Farmers', icon: Users },
+  { href: '/admin/market', label: 'Market Prices', icon: TrendingUp },
+  { href: '/admin/content', label: 'Education', icon: PlaySquare },
+  { href: '/admin/crops', label: 'Crop Info', icon: Leaf },
+]
+
+interface NavbarProps {
+  // Admin pages with data-dense layouts (e.g. the Users table + sidebar) need
+  // more room than the farmer app's content pages — this keeps the navbar's
+  // own inner width in sync with whatever the page below it is using, so the
+  // logo/links/avatar still line up with the content edges.
+  containerClassName?: string
+}
+
+export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps = {}) {
   const pathname = usePathname()
   const router = useRouter()
   const { t, lang, setLang } = useLanguage()
@@ -33,10 +50,12 @@ export default function Navbar() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
   const [navProfile, setNavProfile] = useState<NavProfile | null>(null)
   const [mounted, setMounted] = useState(false)
 
   const dropRef = useRef<HTMLDivElement>(null)
+  const adminMenuRef = useRef<HTMLDivElement>(null)
 
   const navLinks = [
     { href: '/dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
@@ -85,6 +104,9 @@ export default function Navbar() {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setDropOpen(false)
       }
+      if (adminMenuRef.current && !adminMenuRef.current.contains(e.target as Node)) {
+        setAdminMenuOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -94,6 +116,7 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
     setDropOpen(false)
+    setAdminMenuOpen(false)
   }, [pathname])
 
   async function handleLogout() {
@@ -180,8 +203,8 @@ export default function Navbar() {
             <span className="flex-1 font-medium">{lang === 'sw' ? 'Wasifu Wangu' : 'My Profile'}</span>
           </Link>
 
-          {/* Admin Panel — only for admin / super_admin */}
-          {(navProfile?.role === 'admin' || navProfile?.role === 'super_admin') && (
+          {/* Super Admin — single entry point into the separate admin shell/switch */}
+          {navProfile?.role === 'super_admin' && (
             <Link
               href="/admin"
               onClick={() => setDropOpen(false)}
@@ -192,11 +215,26 @@ export default function Navbar() {
                 style={{ backgroundColor: `${roleMeta.color}18` }}>
                 <ShieldCheck className="h-3.5 w-3.5" />
               </span>
-              <span className="flex-1 font-semibold">
-                {navProfile.role === 'super_admin' ? 'Super Admin Panel' : 'Admin Panel'}
-              </span>
+              <span className="flex-1 font-semibold">Super Admin Panel</span>
             </Link>
           )}
+
+          {/* Admin tools — merged directly into the same nav, no separate mode */}
+          {navProfile?.role === 'admin' && ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setDropOpen(false)}
+              className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
+              style={{ color: roleMeta.color }}
+            >
+              <span className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+                style={{ backgroundColor: `${roleMeta.color}18` }}>
+                <Icon className="h-3.5 w-3.5" />
+              </span>
+              <span className="flex-1 font-semibold">{label}</span>
+            </Link>
+          ))}
 
           <Link
             href="/qr"
@@ -272,8 +310,8 @@ export default function Navbar() {
           </span>
           {t.nav.logout}
         </button>
-      </div>,
-      </motion.div >
+      </div>
+      </motion.div>
     )
   }
 
@@ -292,7 +330,7 @@ export default function Navbar() {
         }}
       >
         {/* Inner wrapper — same max-width as page content so logo/links/avatar line up */}
-        <div className="max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center gap-4">
+        <div className={`${containerClassName} mx-auto px-4 md:px-6 h-14 flex items-center gap-4`}>
 
           {/* ── Logo ─────────────────────────────────────────────── */}
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0 group">
@@ -317,7 +355,7 @@ export default function Navbar() {
                       ? 'text-white'
                       : 'text-[var(--sidebar-fg)] hover:text-white hover:bg-white/8'
                     }`}
-                >,
+                >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span>{label}</span>
                   {active && (
@@ -332,12 +370,12 @@ export default function Navbar() {
               )
             })}
           </nav>
-          ,
+
           {/* ── Right side: profile pill + mobile hamburger ───────── */}
           <div className="ml-auto flex items-center gap-2 shrink-0">
 
-            {/* Admin shortcut — visible to admin / super_admin */}
-            {(navProfile?.role === 'admin' || navProfile?.role === 'super_admin') && (
+            {/* Super Admin shortcut — straight into the separate admin shell/switch */}
+            {navProfile?.role === 'super_admin' && (
               <Link
                 href="/admin"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -348,8 +386,55 @@ export default function Navbar() {
                 }}
               >
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                {navProfile.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                Super Admin
               </Link>
+            )}
+
+            {/* Admin quick-access menu — the tools are one click away, not buried in the profile dropdown */}
+            {navProfile?.role === 'admin' && (
+              <div className="relative hidden sm:block" ref={adminMenuRef}>
+                <button
+                  onClick={() => { setAdminMenuOpen(o => !o); setDropOpen(false) }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    backgroundColor: `${roleMeta.color}22`,
+                    color: roleMeta.color,
+                    border: `1px solid ${roleMeta.color}44`,
+                  }}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                  Admin
+                  <ChevronDown className="h-3 w-3 shrink-0" />
+                </button>
+                <AnimatePresence>
+                  {adminMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.16 }}
+                      className="absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-2xl overflow-hidden py-1.5"
+                      style={{
+                        backgroundColor: 'var(--sidebar)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                      }}
+                    >
+                      {ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={() => setAdminMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3.5 py-2 text-sm text-[var(--sidebar-fg)] hover:bg-white/8 hover:text-white transition-all"
+                        >
+                          <Icon className="h-3.5 w-3.5 shrink-0" />
+                          {label}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Profile avatar + name pill — the dropdown trigger */}
@@ -429,6 +514,25 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
+
+            {navProfile?.role === 'admin' && (
+              <div className="mx-3 mt-1.5 pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                {ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${pathname === href
+                        ? 'bg-[var(--primary)] text-white'
+                        : 'text-[var(--sidebar-fg)] hover:bg-white/8 hover:text-white'
+                      }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

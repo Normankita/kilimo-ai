@@ -38,16 +38,25 @@ export default async function proxy(request: NextRequest) {
   const authPages = ['/login', '/register', '/forgot-password', '/reset-password']
   const isAuthPage = authPages.some(p => pathname.startsWith(p))
 
-  if (user && isAuthPage) {
+  if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_active')
       .eq('id', user.id)
       .single()
 
-    const role = profile?.role
-    const dest = (role === 'admin' || role === 'super_admin') ? '/admin' : '/dashboard'
-    return NextResponse.redirect(new URL(dest, request.url))
+    if (profile?.is_active === false) {
+      await supabase.auth.signOut()
+      if (!isAuthPage) {
+        const url = new URL('/login', request.url)
+        url.searchParams.set('deactivated', '1')
+        return NextResponse.redirect(url)
+      }
+    } else if (isAuthPage) {
+      const role = profile?.role
+      const dest = (role === 'admin' || role === 'super_admin') ? '/admin' : '/dashboard'
+      return NextResponse.redirect(new URL(dest, request.url))
+    }
   }
 
   return supabaseResponse

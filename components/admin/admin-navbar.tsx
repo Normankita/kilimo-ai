@@ -12,6 +12,8 @@ import {
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// This shell is only ever rendered for super_admin — plain admins use the
+// merged farmer Navbar (see app/admin/layout.tsx).
 const ROLE_META: Record<UserRole, { label: string; color: string; bg: string; icon: React.ElementType }> = {
   farmer:      { label: 'Mkulima',        color: '#4a8a60', bg: 'rgba(74,138,96,0.15)',   icon: Sprout  },
   admin:       { label: 'Admin',          color: '#c4952a', bg: 'rgba(196,149,42,0.15)',   icon: Shield  },
@@ -33,20 +35,13 @@ export default function AdminNavbar({ role, name, email }: Props) {
   const roleMeta = ROLE_META[role]
   const RoleIcon = roleMeta.icon
 
-  // Links available to all admins
-  const baseLinks: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
+  const links: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
     { href: '/admin',         label: 'Dashboard',     icon: LayoutDashboard, exact: true },
+    { href: '/admin/users',   label: 'Users',         icon: Users },
     { href: '/admin/market',  label: 'Market Prices', icon: TrendingUp },
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
   ]
-
-  // Super-admin only
-  const superLinks: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
-    { href: '/admin/users', label: 'Users', icon: Users },
-  ]
-
-  const links = role === 'super_admin' ? [...baseLinks, ...superLinks] : baseLinks
 
   function isActive(href: string, exact?: boolean) {
     return exact ? pathname === href : pathname.startsWith(href) && pathname !== '/admin'
@@ -71,7 +66,7 @@ export default function AdminNavbar({ role, name, email }: Props) {
           borderColor: 'rgba(255,255,255,0.08)',
         }}
       >
-        <div className="max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center gap-3">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-14 flex items-center gap-3">
 
           {/* Logo + panel badge */}
           <div className="flex items-center gap-2 shrink-0">

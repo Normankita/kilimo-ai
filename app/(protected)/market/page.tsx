@@ -86,7 +86,7 @@ export default function MarketPage() {
       </div>
 
       {/* Crop cards */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         {Object.entries(grouped).map(([crop, items], ci) => {
           const prices = items.map(i => i.price_per_kg)
           const maxP = Math.max(...prices)

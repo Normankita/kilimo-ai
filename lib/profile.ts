@@ -8,11 +8,32 @@ export interface Profile {
   full_name?: string
   location?: string
   email?: string
+  phone_number?: string
+  farm_location?: string
+  bio?: string
+  is_active?: boolean
+  last_active_at?: string | null
+  first_active_at?: string | null
   created_at?: string
 }
 
 export function roleRedirectPath(role: UserRole): string {
   return role === 'farmer' ? '/dashboard' : '/admin'
+}
+
+// Mirrors the guard_profile_privileged_fields trigger in supabase/schema.sql:
+// - nobody can act on their own row
+// - admins may only manage farmers
+// - nobody (including super_admin) may manage a super_admin row
+export function canManageUser(
+  actingRole: UserRole,
+  actingId: string,
+  target: { id: string; role: UserRole }
+): boolean {
+  if (target.id === actingId) return false
+  if (target.role === 'super_admin') return false
+  if (actingRole === 'admin') return target.role === 'farmer'
+  return actingRole === 'super_admin'
 }
 
 export async function fetchOrCreateProfile(userId: string, fallbackData?: Partial<Profile>): Promise<Profile | null> {
