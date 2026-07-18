@@ -12,7 +12,7 @@ import { AssistantTour } from '@/components/tutorial/assistant-tour'
 interface Message { role: 'user' | 'assistant'; content: string }
 
 export default function AssistantPage() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const reduced = useReducedMotion()
 
   const [messages, setMessages] = useState<Message[]>([
@@ -42,7 +42,7 @@ export default function AssistantPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, lang }),
       })
       const data = await res.json()
 

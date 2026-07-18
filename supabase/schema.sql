@@ -342,3 +342,57 @@ SELECT * FROM (VALUES
    'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'kupanda', 'Mazao Mengi', 'Kiswahili')
 ) AS v(title, description, video_url, category, crop_name, language)
 WHERE NOT EXISTS (SELECT 1 FROM public.educational_content LIMIT 1);
+
+-- These were previously hardcoded directly in app/(protected)/crops/page.tsx.
+-- Migrating them here so the farmer-facing Crops page (now reading from this
+-- table) keeps showing the same 5 crops, and so the existing admin CRUD at
+-- app/admin/crops/page.tsx actually has something to manage.
+INSERT INTO public.crop_info (name, name_en, emoji, season_sw, season_en, water_sw, water_en, temperature, yield_sw, yield_en, diseases, tips_sw, tips_en, accent_color)
+SELECT * FROM (VALUES
+  ('Mahindi', 'Maize', '🌽',
+   'Masika (Machi–Juni) na Vuli (Okt–Jan)', 'Long rains (Mar–Jun) & short rains (Oct–Jan)',
+   'Wastani, mm 500–800 kwa msimu', 'Moderate, 500–800 mm per season',
+   '18–30°C',
+   '2–4 t/ha (kawaida) | 6–8 t/ha (na mbolea)', '2–4 t/ha (basic) | 6–8 t/ha (with fertiliser)',
+   '["Maize streak", "Rust (Kutu)", "Smut", "Fall armyworm"]'::jsonb,
+   'Panda mbegu bora. Weka DAP wakati wa kupanda, urea wiki 4–6 baadaye.',
+   'Use certified seeds. Apply DAP at planting, urea at 4–6 weeks.',
+   '#2a5c3f'),
+  ('Mchele', 'Rice', '🌾',
+   'Masika (Machi–Agosti), unahitaji mvua nyingi', 'Rainy season (Mar–Aug), needs heavy rain',
+   'Nyingi, mm 1000–2000 au umwagiliaji', 'Heavy, 1000–2000 mm or irrigation needed',
+   '20–35°C',
+   '2–3 t/ha (mvua) | 4–6 t/ha (umwagiliaji)', '2–3 t/ha (rain-fed) | 4–6 t/ha (irrigated)',
+   '["Rice blast", "Sheath blight", "Leaf rust"]'::jsonb,
+   'Panda katika safu cm 20×20. Punguza maji wiki 2 kabla ya kuvuna.',
+   'Plant in rows 20×20 cm. Reduce water 2 weeks before harvest.',
+   '#2a5878'),
+  ('Nyanya', 'Tomatoes', '🍅',
+   'Mwaka mzima (bora hali kavu na umwagiliaji)', 'Year-round (best in dry season with irrigation)',
+   'Wastani–nyingi; umwagiliaji mara kwa mara', 'Moderate–heavy; regular irrigation',
+   '18–27°C',
+   '15–25 t/ha', '15–25 t/ha',
+   '["Early blight", "Late blight", "Fusarium wilt", "Leaf miner"]'::jsonb,
+   'Tumia mbegu zilizothibitishwa. Funga mimea kwa nguzo. Dawa mapema.',
+   'Use certified seeds. Stake plants for support. Start pest control early.',
+   '#7c2020'),
+  ('Maharage', 'Beans', '🫘',
+   'Masika na Vuli, fuata mvua', 'Both rainy seasons, follow the rains',
+   'Kidogo–wastani, mm 300–500 kwa msimu', 'Low–moderate, 300–500 mm per season',
+   '16–24°C',
+   '0.8–1.5 t/ha', '0.8–1.5 t/ha',
+   '["Angular leaf spot", "Bean rust", "Bacterial blight", "Aphids"]'::jsonb,
+   'Zungushia mazao kila msimu. Vuna mapema ili mbegu zisiote.',
+   'Rotate crops each season. Harvest early to prevent seed sprouting.',
+   '#5a4010'),
+  ('Vitunguu', 'Onions', '🧅',
+   'Hali kavu (Juni–Novemba), ukanda kame bora', 'Dry season (Jun–Nov), arid zones best',
+   'Kidogo, mm 350–500, umwagiliaji kidogo', 'Low, 350–500 mm, light irrigation',
+   '13–24°C',
+   '10–20 t/ha', '10–20 t/ha',
+   '["Purple blotch", "Downy mildew", "Thrips"]'::jsonb,
+   'Usimwagilie kupita kiasi, vitunguu vinaoza. Vuna vikisalia nje.',
+   E'Don\'t overwater, bulbs rot easily. Harvest when tops fall over.',
+   '#4a2a6e')
+) AS v(name, name_en, emoji, season_sw, season_en, water_sw, water_en, temperature, yield_sw, yield_en, diseases, tips_sw, tips_en, accent_color)
+WHERE NOT EXISTS (SELECT 1 FROM public.crop_info LIMIT 1);
