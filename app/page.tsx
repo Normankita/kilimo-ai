@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useLanguage } from '@/lib/language-context'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { QRCodeSVG } from 'qrcode.react'
+import { createClient } from '@/lib/supabase/client'
 import {
   Sprout, MessageSquare, Cloud, TrendingUp, GraduationCap,
   ArrowRight, ChevronRight, Users, Zap, Smartphone, Apple,
@@ -59,15 +60,28 @@ const STATS = [
   { sw: 'Mazao Yanayosaidia', en: 'Crops Supported', value: '5+' },
 ]
 
+interface BrandingImage {
+  id: number
+  image_url: string
+  caption: string | null
+}
+
 export default function LandingPage() {
   const { lang, setLang, t } = useLanguage()
   const reduced = useReducedMotion()
   const [scrolled, setScrolled] = useState(false)
+  const [brandingImages, setBrandingImages] = useState<BrandingImage[]>([])
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
+  }, [])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('branding_images').select('id, image_url, caption').order('sort_order')
+      .then(({ data }) => setBrandingImages(data ?? []))
   }, [])
 
   const sw = lang === 'sw'
@@ -226,6 +240,41 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ── Branding gallery — real photos, admin-managed ─────────
+          Omitted entirely until an admin uploads at least one image
+          (app/admin/branding/page.tsx), so a fresh install never
+          shows a broken/empty section here. ──────────────────── */}
+      {brandingImages.length > 0 && (
+        <section className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div className="text-center mb-10" {...fade()}>
+              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text)' }}>
+                {sw ? 'Wakulima Halisi' : 'Real Farmers'}
+              </h2>
+              <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+                {sw ? 'Kilimo AI kikitumika mashambani Tanzania' : 'Kilimo AI in use on farms across Tanzania'}
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {brandingImages.map((img, i) => (
+                <motion.div
+                  key={img.id}
+                  className="rounded-2xl overflow-hidden border"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}
+                  {...fade(i * 0.06)}
+                >
+                  <img src={img.image_url} alt={img.caption ?? ''} className="w-full h-40 object-cover" />
+                  {img.caption && (
+                    <p className="text-xs px-3 py-2" style={{ color: 'var(--text-muted)' }}>{img.caption}</p>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Features ───────────────────────────────────────────── */}
       <section id="features" className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>

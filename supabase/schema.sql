@@ -128,12 +128,10 @@ BEGIN
   IF (NEW.role IS DISTINCT FROM OLD.role) OR (NEW.is_active IS DISTINCT FROM OLD.is_active) THEN
     IF NEW.id = auth.uid() THEN
       RAISE EXCEPTION 'Cannot change your own role or active status';
-    ELSIF public.get_my_role() = 'admin' AND OLD.role <> 'farmer' THEN
-      RAISE EXCEPTION 'Admins may only manage farmer accounts';
     ELSIF public.get_my_role() NOT IN ('admin', 'super_admin') THEN
       RAISE EXCEPTION 'Not authorized to change role or active status';
-    ELSIF public.get_my_role() = 'super_admin' AND OLD.role = 'super_admin' THEN
-      RAISE EXCEPTION 'Super admins cannot manage other super admins';
+    ELSIF public.get_my_role() = 'admin' AND (OLD.role = 'super_admin' OR NEW.role = 'super_admin') THEN
+      RAISE EXCEPTION 'Admins may not manage or grant super admin access';
     END IF;
   END IF;
   RETURN NEW;
@@ -218,8 +216,11 @@ CREATE TABLE IF NOT EXISTS public.crop_info (
   tips_sw      text,
   tips_en      text,
   accent_color text DEFAULT '#2a5c3f',
+  image_url    text,
   created_at   timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.crop_info ADD COLUMN IF NOT EXISTS image_url text;
 
 ALTER TABLE public.crop_info ENABLE ROW LEVEL SECURITY;
 
@@ -232,6 +233,33 @@ CREATE POLICY "crop_info_select"
 
 CREATE POLICY "crop_info_write"
   ON public.crop_info FOR ALL
+  USING     (get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
+
+
+-- ── 4b. BRANDING IMAGES ──────────────────────────────────────────────────────
+-- Admin-managed photos shown on the public landing page (app/page.tsx).
+
+CREATE TABLE IF NOT EXISTS public.branding_images (
+  id         bigserial PRIMARY KEY,
+  image_url  text NOT NULL,
+  caption    text,
+  sort_order int NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.branding_images ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "branding_images_select" ON public.branding_images;
+DROP POLICY IF EXISTS "branding_images_write"  ON public.branding_images;
+
+-- Public landing page is unauthenticated — anyone (including anon visitors) can view.
+CREATE POLICY "branding_images_select"
+  ON public.branding_images FOR SELECT
+  USING (true);
+
+CREATE POLICY "branding_images_write"
+  ON public.branding_images FOR ALL
   USING     (get_my_role() IN ('admin', 'super_admin'))
   WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
 
@@ -294,6 +322,28 @@ CREATE POLICY "avatars_delete_own"
     bucket_id = 'avatars'
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
+
+
+-- ── 6b. STORAGE, SITE MEDIA BUCKET ──────────────────────────────────────────
+-- Shared admin-managed media: crop photos (crops/...) and landing-page
+-- branding images (branding/...). Unlike avatars this isn't per-user-owned,
+-- so writes are gated by role instead of folder ownership.
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('site-media', 'site-media', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "site_media_public_read"   ON storage.objects;
+DROP POLICY IF EXISTS "site_media_admin_write"   ON storage.objects;
+
+CREATE POLICY "site_media_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'site-media');
+
+CREATE POLICY "site_media_admin_write"
+  ON storage.objects FOR ALL
+  USING     (bucket_id = 'site-media' AND get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (bucket_id = 'site-media' AND get_my_role() IN ('admin', 'super_admin'));
 
 
 -- ── 7. SEED DATA (skipped if tables already have rows) ──────────────────────

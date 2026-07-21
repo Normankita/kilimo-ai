@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ImagePlus, Leaf } from 'lucide-react'
 
 interface CropInfo {
   id: number
@@ -26,12 +26,13 @@ interface CropInfo {
   tips_sw?: string
   tips_en?: string
   accent_color?: string
+  image_url?: string | null
 }
 
 const BLANK: Omit<CropInfo, 'id'> = {
   name: '', name_en: '', emoji: '🌿', season_sw: '', season_en: '',
   water_sw: '', water_en: '', temperature: '', yield_sw: '', yield_en: '',
-  diseases: [], tips_sw: '', tips_en: '', accent_color: '#2a5c3f',
+  diseases: [], tips_sw: '', tips_en: '', accent_color: '#2a5c3f', image_url: null,
 }
 
 export default function AdminCropsPage() {
@@ -45,8 +46,30 @@ export default function AdminCropsPage() {
   const [form, setForm] = useState<Omit<CropInfo, 'id'>>(BLANK)
   const [diseasesInput, setDiseasesInput] = useState('')
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const supabase = createClient()
+
+  async function handleImageUpload(file: File) {
+    if (file.size > 3 * 1024 * 1024) { toast.error('Image must be under 3MB'); return }
+    if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) { toast.error('Use a JPEG, PNG, or WebP image'); return }
+
+    setUploadingImage(true)
+    const path = `crops/${Date.now()}.jpg`
+    const { error } = await supabase.storage.from('site-media')
+      .upload(path, file, { upsert: true, contentType: file.type })
+
+    if (error) {
+      toast.error('Upload failed: ' + error.message)
+      setUploadingImage(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('site-media').getPublicUrl(path)
+    setForm(prev => ({ ...prev, image_url: publicUrl }))
+    setUploadingImage(false)
+  }
 
   async function load() {
     setLoading(true)
@@ -146,7 +169,13 @@ export default function AdminCropsPage() {
               ) : crops.map(crop => (
                 <tr key={crop.id} style={{ borderBottom: '1px solid var(--border)' }}
                   className="transition-colors hover:bg-[var(--surface-2)]">
-                  <td className="px-4 py-3 text-lg">{crop.emoji ?? '🌿'}</td>
+                  <td className="px-4 py-3">
+                    {crop.image_url ? (
+                      <img src={crop.image_url} alt="" className="h-9 w-9 rounded-lg object-cover" />
+                    ) : (
+                      <span className="text-lg">{crop.emoji ?? '🌿'}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium" style={{ color: 'var(--text)' }}>{crop.name}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{crop.name_en}</td>
                   <td className="px-4 py-3 text-xs max-w-[180px] truncate" style={{ color: 'var(--text-muted)' }}>{crop.season_sw}</td>
@@ -170,6 +199,31 @@ export default function AdminCropsPage() {
 
       <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Edit Crop' : 'Add Crop Info'} maxWidth="max-w-2xl">
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Photo</Label>
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 rounded-lg overflow-hidden flex items-center justify-center shrink-0"
+                style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                {form.image_url
+                  ? <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+                  : <Leaf className="h-6 w-6" style={{ color: 'var(--text-muted)' }} />
+                }
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={e => { const file = e.target.files?.[0]; if (file) handleImageUpload(file) }}
+              />
+              <Button type="button" variant="outline" size="sm" className="gap-1.5"
+                onClick={() => fileRef.current?.click()} disabled={uploadingImage}>
+                <ImagePlus className="h-3.5 w-3.5" />
+                {uploadingImage ? 'Uploading...' : form.image_url ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Emoji</Label>

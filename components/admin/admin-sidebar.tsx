@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf, Users,
-  LogOut, ChevronLeft, Menu, X, Shield, UserCircle,
+  LogOut, ChevronLeft, Menu, X, Shield, UserCircle, Image as ImageIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -36,6 +36,7 @@ export default function AdminSidebar({ role, name, email }: Props) {
     { href: '/admin/market',  label: 'Market Prices', icon: TrendingUp },
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
+    { href: '/admin/branding', label: 'Branding',     icon: ImageIcon },
   ]
 
   function isActive(href: string, exact?: boolean) {

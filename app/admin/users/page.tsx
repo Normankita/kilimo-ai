@@ -73,7 +73,9 @@ export default function AdminUsersPage() {
       .select('id, role, full_name, email, location, phone_number, farm_location, bio, is_active, last_active_at, first_active_at, created_at')
       .order('created_at', { ascending: false })
 
-    if (role === 'admin') query = query.eq('role', 'farmer')
+    // Admins manage farmers and other admins, but a super_admin row should
+    // never even surface in an admin's list — not just be uneditable.
+    if (role === 'admin') query = query.neq('role', 'super_admin')
 
     const { data, error } = await query
     if (error) toast.error(error.message)
@@ -209,16 +211,14 @@ export default function AdminUsersPage() {
     }
   }
 
-  const heading = viewerRole === 'admin' ? 'Manage Farmers' : 'Users'
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{heading}</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Users</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {users.length} total · {roleCount('farmer')} farmers
-            {viewerRole === 'super_admin' && ` · ${roleCount('admin')} admins`}
+            {users.length} total · {roleCount('farmer')} farmers · {roleCount('admin')} admins
+            {viewerRole === 'super_admin' && ` · ${roleCount('super_admin')} super admins`}
           </p>
         </div>
         <div className="relative w-full sm:w-64">
@@ -334,6 +334,8 @@ export default function AdminUsersPage() {
                           style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}>
                           <option value="farmer">farmer</option>
                           <option value="admin">admin</option>
+                          {/* Only super_admin can grant/hold super_admin — admin can never manage or set this role */}
+                          {viewerRole === 'super_admin' && <option value="super_admin">super_admin</option>}
                         </select>
                       ) : (
                         <Badge variant={ROLE_COLORS[user.role] ?? 'outline'}>{user.role}</Badge>

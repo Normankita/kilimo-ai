@@ -7,9 +7,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Users, TrendingUp, PlaySquare, Leaf, Clock, Circle, ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { isOnline } from '@/lib/utils'
+import type { UserRole } from '@/lib/profile'
 
 const QUICK_LINKS = [
-  { href: '/admin/users',   label: 'Manage Farmers', description: 'Search, edit, activate/deactivate accounts', icon: Users,      color: 'var(--primary)' },
+  { href: '/admin/users',   label: 'Users',          description: 'Search, edit, activate/deactivate accounts', icon: Users,      color: 'var(--primary)' },
   { href: '/admin/market',  label: 'Market Prices',  description: 'Add or edit crop price entries',              icon: TrendingUp, color: '#1c6a9e' },
   { href: '/admin/content', label: 'Education',      description: 'Manage educational videos',                  icon: PlaySquare, color: '#5a3a6e' },
   { href: '/admin/crops',   label: 'Crop Info',      description: 'Manage crop reference data',                 icon: Leaf,       color: '#5a6e3a' },
@@ -18,6 +19,7 @@ const QUICK_LINKS = [
 interface Stats {
   farmers: number
   admins: number
+  superAdmins: number
   farmersOnline: number
   adminsOnline: number
   marketEntries: number
@@ -32,18 +34,28 @@ interface RecentPrice {
   recorded_date: string
 }
 
-const statCards = (s: Stats) => [
-  { label: 'Farmers Online Now', value: s.farmersOnline, icon: Circle, color: '#10b981' },
-  { label: 'Admins Online Now',  value: s.adminsOnline,  icon: Circle, color: '#10b981' },
-  { label: 'Total Farmers', value: s.farmers, icon: Users,       color: 'var(--primary)' },
-  { label: 'Admins',        value: s.admins,  icon: Users,       color: '#7c3aed' },
-  { label: 'Market Entries',value: s.marketEntries, icon: TrendingUp, color: '#1c6a9e' },
-  { label: 'Videos',        value: s.videos,  icon: PlaySquare,  color: '#5a3a6e' },
-  { label: 'Crop Info',     value: s.cropInfo, icon: Leaf,        color: '#5a6e3a' },
-]
+function statCards(s: Stats, viewerRole: UserRole | null) {
+  const cards = [
+    { label: 'Farmers Online Now', value: s.farmersOnline, icon: Circle, color: '#10b981' },
+    { label: 'Admins Online Now',  value: s.adminsOnline,  icon: Circle, color: '#10b981' },
+    { label: 'Total Farmers', value: s.farmers, icon: Users,       color: 'var(--primary)' },
+    { label: 'Admins',        value: s.admins,  icon: Users,       color: '#7c3aed' },
+    { label: 'Market Entries',value: s.marketEntries, icon: TrendingUp, color: '#1c6a9e' },
+    { label: 'Videos',        value: s.videos,  icon: PlaySquare,  color: '#5a3a6e' },
+    { label: 'Crop Info',     value: s.cropInfo, icon: Leaf,        color: '#5a6e3a' },
+  ]
+  // super_admin can see and manage everyone, including other super_admins — an
+  // admin has no mandate over them, so this card (and the row it's built from)
+  // never appears for a plain admin viewer.
+  if (viewerRole === 'super_admin') {
+    cards.splice(4, 0, { label: 'Super Admins', value: s.superAdmins, icon: Users, color: '#a855f7' })
+  }
+  return cards
+}
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<Stats>({ farmers: 0, admins: 0, farmersOnline: 0, adminsOnline: 0, marketEntries: 0, videos: 0, cropInfo: 0 })
+  const [viewerRole, setViewerRole] = useState<UserRole | null>(null)
+  const [stats, setStats] = useState<Stats>({ farmers: 0, admins: 0, superAdmins: 0, farmersOnline: 0, adminsOnline: 0, marketEntries: 0, videos: 0, cropInfo: 0 })
   const [recent, setRecent] = useState<RecentPrice[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -51,19 +63,31 @@ export default function AdminDashboardPage() {
     const supabase = createClient()
 
     async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: viewer } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      const role = (viewer?.role ?? 'farmer') as UserRole
+      setViewerRole(role)
+
+      let profilesQuery = supabase.from('profiles').select('role, last_active_at')
+      // An admin's view must never include super_admin rows — not even in counts.
+      if (role === 'admin') profilesQuery = profilesQuery.neq('role', 'super_admin')
+
       const [profiles, market, videos, crops] = await Promise.all([
-        supabase.from('profiles').select('role, last_active_at'),
+        profilesQuery,
         supabase.from('market_prices').select('id', { count: 'exact', head: true }),
         supabase.from('educational_content').select('id', { count: 'exact', head: true }),
         supabase.from('crop_info').select('id', { count: 'exact', head: true }),
       ])
 
-      const farmerRows = profiles.data?.filter(p => p.role === 'farmer') ?? []
-      const adminRows  = profiles.data?.filter(p => p.role !== 'farmer') ?? []
+      const farmerRows     = profiles.data?.filter(p => p.role === 'farmer') ?? []
+      const adminRows      = profiles.data?.filter(p => p.role === 'admin') ?? []
+      const superAdminRows = profiles.data?.filter(p => p.role === 'super_admin') ?? []
 
       setStats({
         farmers: farmerRows.length,
         admins: adminRows.length,
+        superAdmins: superAdminRows.length,
         farmersOnline: farmerRows.filter(p => isOnline(p.last_active_at)).length,
         adminsOnline: adminRows.filter(p => isOnline(p.last_active_at)).length,
         marketEntries: market.count ?? 0,
@@ -113,7 +137,7 @@ export default function AdminDashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {statCards(stats).map((s, i) => (
+        {statCards(stats, viewerRole).map((s, i) => (
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}>

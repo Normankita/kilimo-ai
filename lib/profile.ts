@@ -22,17 +22,16 @@ export function roleRedirectPath(role: UserRole): string {
 }
 
 // Mirrors the guard_profile_privileged_fields trigger in supabase/schema.sql:
-// - nobody can act on their own row
-// - admins may only manage farmers
-// - nobody (including super_admin) may manage a super_admin row
+// - nobody can act on their own row (self-lockout protection)
+// - admins may manage farmers and other admins, but never super_admins
+// - super_admin may manage anyone else, including other super_admins
 export function canManageUser(
   actingRole: UserRole,
   actingId: string,
   target: { id: string; role: UserRole }
 ): boolean {
   if (target.id === actingId) return false
-  if (target.role === 'super_admin') return false
-  if (actingRole === 'admin') return target.role === 'farmer'
+  if (actingRole === 'admin') return target.role !== 'super_admin'
   return actingRole === 'super_admin'
 }
 

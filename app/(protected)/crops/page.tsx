@@ -24,6 +24,7 @@ interface CropInfo {
   tips_sw: string | null
   tips_en: string | null
   accent_color: string | null
+  image_url: string | null
 }
 
 const cardVariants = {
@@ -82,8 +83,12 @@ export default function CropsPage() {
               animate="visible"
             >
               <Card className="overflow-hidden">
-                {/* Accent stripe */}
-                <div className="h-1 w-full" style={{ backgroundColor: crop.accent_color ?? '#2a5c3f' }} />
+                {crop.image_url ? (
+                  <img src={crop.image_url} alt={crop.name} className="h-36 w-full object-cover" />
+                ) : (
+                  /* Accent stripe — shown when no photo has been uploaded yet */
+                  <div className="h-1 w-full" style={{ backgroundColor: crop.accent_color ?? '#2a5c3f' }} />
+                )}
 
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2.5 text-base">

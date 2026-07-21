@@ -9,7 +9,7 @@ import {
   Sprout, LayoutDashboard, MessageSquare, TrendingUp,
   GraduationCap, LogOut, Menu, X, Languages, Sun, Moon,
   Monitor, User, QrCode, ChevronDown, ShieldCheck, Wheat,
-  Users, PlaySquare, Leaf,
+  Users, PlaySquare, Leaf, Image as ImageIcon,
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,10 +28,11 @@ const ROLE_META: Record<string, { label: string; color: string; icon: React.Elem
 
 const ADMIN_TOOL_LINKS = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Manage Farmers', icon: Users },
+  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/market', label: 'Market Prices', icon: TrendingUp },
   { href: '/admin/content', label: 'Education', icon: PlaySquare },
   { href: '/admin/crops', label: 'Crop Info', icon: Leaf },
+  { href: '/admin/branding', label: 'Branding', icon: ImageIcon },
 ]
 
 interface NavbarProps {
