@@ -37,6 +37,7 @@ export async function GET(request: Request) {
         role: 'farmer',
         full_name: data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? null,
         email: data.user.email,
+        avatar_url: data.user.user_metadata?.avatar_url ?? data.user.user_metadata?.picture ?? null,
       })
       .select('role')
       .single()

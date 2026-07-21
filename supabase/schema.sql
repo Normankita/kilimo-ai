@@ -43,6 +43,14 @@ SET email = u.email
 FROM auth.users u
 WHERE p.id = u.id AND (p.email IS NULL OR p.email = '');
 
+-- Backfill profiles.avatar_url for users who signed up via Google before this
+-- column was surfaced in the UI. Only fills nulls — never overwrites a photo
+-- a user has since uploaded themselves via /profile.
+UPDATE public.profiles p
+SET avatar_url = COALESCE(u.raw_user_meta_data->>'avatar_url', u.raw_user_meta_data->>'picture')
+FROM auth.users u
+WHERE p.id = u.id AND p.avatar_url IS NULL;
+
 -- Best-effort backfill for first_active_at on rows that were already active
 -- before this column existed: we never recorded a real "first seen" for them,
 -- so approximate it with created_at (closest thing we have to "day one").
@@ -297,6 +305,41 @@ CREATE POLICY "site_settings_write"
   ON public.site_settings FOR ALL
   USING     (get_my_role() = 'super_admin')
   WITH CHECK (get_my_role() = 'super_admin');
+
+
+-- ── 4d. AUDIT LOG ────────────────────────────────────────────────────────────
+-- Append-only trail of critical admin actions on user accounts (role changes,
+-- activate/deactivate, password resets, profile edits). Written by admins and
+-- super_admins as themselves; readable only by super_admin.
+
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id          bigserial PRIMARY KEY,
+  actor_id    uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  actor_name  text,
+  actor_role  text,
+  action      text NOT NULL, -- role_change | activate | deactivate | profile_edit | password_reset_direct | password_reset_link
+  target_id   uuid,
+  target_name text,
+  details     jsonb NOT NULL DEFAULT '{}',
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS audit_logs_created_at_idx ON public.audit_logs (created_at DESC);
+
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "audit_logs_insert" ON public.audit_logs;
+DROP POLICY IF EXISTS "audit_logs_select" ON public.audit_logs;
+
+-- Any admin/super_admin can write a log entry, but only ever as themselves
+CREATE POLICY "audit_logs_insert"
+  ON public.audit_logs FOR INSERT
+  WITH CHECK (get_my_role() IN ('admin', 'super_admin') AND actor_id = auth.uid());
+
+-- Only super_admin may read the trail
+CREATE POLICY "audit_logs_select"
+  ON public.audit_logs FOR SELECT
+  USING (get_my_role() = 'super_admin');
 
 
 -- ── 5. AI CONVERSATIONS ─────────────────────────────────────────────────────

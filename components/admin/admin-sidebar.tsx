@@ -7,7 +7,7 @@ import { useSiteSettings } from '@/lib/site-settings-context'
 import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf, Users,
-  LogOut, ChevronLeft, Menu, X, Shield, UserCircle, Image as ImageIcon, Settings,
+  LogOut, ChevronLeft, Menu, X, Shield, UserCircle, Image as ImageIcon, Settings, ScrollText,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -39,6 +39,7 @@ export default function AdminSidebar({ role, name, email }: Props) {
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
     { href: '/admin/branding', label: 'Branding',     icon: ImageIcon },
+    { href: '/admin/audit-log', label: 'Audit Log',   icon: ScrollText },
     { href: '/admin/settings', label: 'Settings',     icon: Settings },
   ]
 

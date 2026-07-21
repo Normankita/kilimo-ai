@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
-import { Users, Search, Pencil, Ban, CheckCircle2, Mail, KeyRound, Circle, WifiOff, TrendingUp } from 'lucide-react'
+import { Users, Search, Pencil, Ban, CheckCircle2, Mail, KeyRound, Circle, WifiOff, TrendingUp, Eye } from 'lucide-react'
 import { canManageUser, type UserRole } from '@/lib/profile'
 import { isOnline, formatRelativeTime } from '@/lib/utils'
 import { UserGrowthChart } from '@/components/admin/user-growth-chart'
+import { UserContactHoverCard } from '@/components/admin/user-contact-hover-card'
+import { logAuditAction } from '@/lib/audit-log'
 
 interface Profile {
   id: string
@@ -23,6 +25,7 @@ interface Profile {
   phone_number: string | null
   farm_location: string | null
   bio: string | null
+  avatar_url: string | null
   is_active: boolean
   last_active_at: string | null
   first_active_at: string | null
@@ -39,6 +42,7 @@ const BLANK_EDIT = { full_name: '', location: '', phone_number: '', farm_locatio
 
 export default function AdminUsersPage() {
   const [viewerRole, setViewerRole] = useState<UserRole | null>(null)
+  const [viewerName, setViewerName] = useState<string | null>(null)
   const [users, setUsers] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
@@ -48,6 +52,8 @@ export default function AdminUsersPage() {
   const [editing, setEditing] = useState<Profile | null>(null)
   const [editForm, setEditForm] = useState(BLANK_EDIT)
   const [saving, setSaving] = useState(false)
+
+  const [viewingUser, setViewingUser] = useState<Profile | null>(null)
 
   const [deactivating, setDeactivating] = useState<Profile | null>(null)
 
@@ -63,14 +69,15 @@ export default function AdminUsersPage() {
     setCurrentUserId(user?.id ?? null)
     if (!user) return
 
-    const { data: viewer } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const { data: viewer } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
     const role = (viewer?.role ?? 'farmer') as UserRole
     setViewerRole(role)
+    setViewerName(viewer?.full_name ?? null)
 
     setLoading(true)
     let query = supabase
       .from('profiles')
-      .select('id, role, full_name, email, location, phone_number, farm_location, bio, is_active, last_active_at, first_active_at, created_at')
+      .select('id, role, full_name, email, location, phone_number, farm_location, bio, avatar_url, is_active, last_active_at, first_active_at, created_at')
       .order('created_at', { ascending: false })
 
     // Admins manage farmers and other admins, but a super_admin row should
@@ -109,7 +116,21 @@ export default function AdminUsersPage() {
     return canManageUser(viewerRole, currentUserId, target)
   }
 
+  function logUserAction(action: Parameters<typeof logAuditAction>[0]['action'], target: Profile, details?: Record<string, unknown>) {
+    if (!currentUserId || !viewerRole) return
+    logAuditAction({
+      actorId: currentUserId,
+      actorName: viewerName,
+      actorRole: viewerRole,
+      action,
+      targetId: target.id,
+      targetName: target.full_name ?? target.email,
+      details,
+    })
+  }
+
   async function handleRoleChange(userId: string, newRole: string) {
+    const target = users.find(u => u.id === userId)
     setUpdatingId(userId)
     const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
 
@@ -118,6 +139,7 @@ export default function AdminUsersPage() {
     } else {
       toast.success('Role updated')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as UserRole } : u))
+      if (target) logUserAction('role_change', target, { from: target.role, to: newRole })
     }
     setUpdatingId(null)
   }
@@ -141,7 +163,10 @@ export default function AdminUsersPage() {
       toast.error(error.message)
     } else {
       toast.success('Details updated')
+      const changed = (Object.keys(editForm) as (keyof typeof editForm)[])
+        .filter(key => (editing[key] ?? '') !== editForm[key])
       setUsers(prev => prev.map(u => u.id === editing.id ? { ...u, ...editForm } : u))
+      if (changed.length) logUserAction('profile_edit', editing, { changed })
       setEditing(null)
     }
     setSaving(false)
@@ -157,6 +182,7 @@ export default function AdminUsersPage() {
     } else {
       toast.success(nextActive ? 'Account activated' : 'Account deactivated')
       setUsers(prev => prev.map(u => u.id === deactivating.id ? { ...u, is_active: nextActive } : u))
+      logUserAction(nextActive ? 'activate' : 'deactivate', deactivating)
     }
     setUpdatingId(null)
     setDeactivating(null)
@@ -171,8 +197,12 @@ export default function AdminUsersPage() {
     const { error } = await supabase.auth.resetPasswordForEmail(u.email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
-    if (error) toast.error(error.message)
-    else toast.success(`Reset link sent to ${u.email}`)
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success(`Reset link sent to ${u.email}`)
+      logUserAction('password_reset_link', u)
+    }
     setSendingLinkFor(null)
   }
 
@@ -204,6 +234,7 @@ export default function AdminUsersPage() {
         toast.error(body.error ?? 'Failed to set password')
       } else {
         toast.success(`Password set for ${resettingFor.full_name ?? resettingFor.email ?? 'user'}`)
+        logUserAction('password_reset_direct', resettingFor)
         setResettingFor(null)
       }
     } finally {
@@ -284,7 +315,7 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Name', 'Email', 'Location', 'Role', 'Status', 'Joined', ''].map(h => (
+                {['Name', 'Email', 'Phone', 'Location', 'Role', 'Status', 'Joined', ''].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
                 ))}
               </tr>
@@ -292,11 +323,11 @@ export default function AdminUsersPage() {
             <tbody>
               {loading ? (
                 [...Array(6)].map((_, i) => (
-                  <tr key={i}><td colSpan={7} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
+                  <tr key={i}><td colSpan={8} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <td colSpan={8} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     No users found.
                   </td>
                 </tr>
@@ -309,20 +340,27 @@ export default function AdminUsersPage() {
                   <tr key={user.id} style={{ borderBottom: '1px solid var(--border)' }}
                     className="transition-colors hover:bg-[var(--surface-2)]">
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
-                          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-fg)' }}>
-                          {(user.full_name ?? user.email ?? '?')[0].toUpperCase()}
+                      <UserContactHoverCard user={user}>
+                        <div className="flex items-center gap-2">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                              {(user.full_name ?? user.email ?? '?')[0].toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium" style={{ color: 'var(--text)' }}>
+                              {user.full_name ?? '—'}
+                              {isSelf && <span className="ml-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>(you)</span>}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium" style={{ color: 'var(--text)' }}>
-                            {user.full_name ?? '—'}
-                            {isSelf && <span className="ml-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>(you)</span>}
-                          </p>
-                        </div>
-                      </div>
+                      </UserContactHoverCard>
                     </td>
                     <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{user.email ?? '—'}</td>
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{user.phone_number ?? '—'}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{user.location ?? '—'}</td>
                     <td className="px-4 py-3">
                       {manageable ? (
@@ -359,8 +397,12 @@ export default function AdminUsersPage() {
                       {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-4 py-3">
-                      {manageable && (
-                        <div className="flex items-center gap-1.5 justify-end">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <button onClick={() => setViewingUser(user)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]" title="View details" style={{ color: 'var(--text-muted)' }}>
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+                        {manageable && (
+                        <>
                           <button onClick={() => openEdit(user)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]" title="Edit details" style={{ color: 'var(--text-muted)' }}>
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
@@ -390,8 +432,9 @@ export default function AdminUsersPage() {
                           >
                             {user.is_active ? <Ban className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                           </button>
-                        </div>
-                      )}
+                        </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )
@@ -402,6 +445,86 @@ export default function AdminUsersPage() {
       </Card>
         </div>
       </div>
+
+      {/* User details card */}
+      <Modal open={!!viewingUser} onClose={() => setViewingUser(null)} title="User Details">
+        {viewingUser && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              {viewingUser.avatar_url ? (
+                <img src={viewingUser.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className="h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold shrink-0"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-fg)' }}>
+                  {(viewingUser.full_name ?? viewingUser.email ?? '?')[0].toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-semibold text-base" style={{ color: 'var(--text)' }}>{viewingUser.full_name ?? '—'}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Badge variant={ROLE_COLORS[viewingUser.role] ?? 'outline'}>{viewingUser.role}</Badge>
+                  {!viewingUser.is_active ? (
+                    <Badge variant="destructive">Deactivated</Badge>
+                  ) : isOnline(viewingUser.last_active_at) ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--primary)' }}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Active now
+                    </span>
+                  ) : (
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      Last seen {formatRelativeTime(viewingUser.last_active_at)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Email</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.email ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Phone</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.phone_number ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Location</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.location ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Farm Location</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.farm_location ?? '—'}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Bio</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.bio ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Joined</p>
+                <p style={{ color: 'var(--text)' }}>{viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString() : '—'}</p>
+              </div>
+            </div>
+
+            {canManage(viewingUser) && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openEdit(u) }}>
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+                </Button>
+                <Button variant="outline" disabled={!viewingUser.email} onClick={() => handleSendResetLink(viewingUser)}>
+                  <Mail className="h-3.5 w-3.5 mr-1.5" /> Send reset link
+                </Button>
+                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openResetPassword(u) }}>
+                  <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Set password
+                </Button>
+                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); setDeactivating(u) }}>
+                  {viewingUser.is_active ? <Ban className="h-3.5 w-3.5 mr-1.5" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />}
+                  {viewingUser.is_active ? 'Deactivate' : 'Activate'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* Edit modal */}
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit User Details">
