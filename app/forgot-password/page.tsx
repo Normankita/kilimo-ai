@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export default function ForgotPasswordPage() {
   const { t, lang, setLang } = useLanguage()
+  const { settings } = useSiteSettings()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
@@ -56,14 +58,34 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.35 }}
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: 'var(--primary)' }}>
-            <Sprout className="h-9 w-9 text-white" />
+          <div className="rounded-2xl p-4 mb-4 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+            {settings.logoUrl
+              ? <img src={settings.logoUrl} alt="" className="h-9 w-9 object-cover rounded" />
+              : <Sprout className="h-9 w-9 text-white" />
+            }
           </div>
-          <h1 className="text-2xl font-bold text-white">{t.nav.appName}</h1>
+          <h1 className="text-2xl font-bold text-white">{settings.appName}</h1>
         </div>
 
         <div className="rounded-2xl p-6 shadow-2xl" style={{ backgroundColor: 'var(--surface)' }}>
-          {sent ? (
+          {!settings.passwordResetEnabled ? (
+            <div className="text-center py-4">
+              <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>
+                {lang === 'sw' ? 'Kuweka Upya Nenosiri Kumezimwa' : 'Password Reset Disabled'}
+              </h2>
+              <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
+                {lang === 'sw'
+                  ? 'Huduma hii haipatikani kwa sasa. Wasiliana na msimamizi wako.'
+                  : 'This feature is currently disabled. Contact an administrator.'}
+              </p>
+              <Link href="/login">
+                <Button variant="outline" className="w-full gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  {t.auth.backToLogin}
+                </Button>
+              </Link>
+            </div>
+          ) : sent ? (
             <motion.div
               className="text-center py-4"
               initial={{ opacity: 0, scale: 0.95 }}

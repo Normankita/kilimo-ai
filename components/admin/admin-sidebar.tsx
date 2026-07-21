@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf, Users,
-  LogOut, ChevronLeft, Menu, X, Shield, UserCircle, Image as ImageIcon,
+  LogOut, ChevronLeft, Menu, X, Shield, UserCircle, Image as ImageIcon, Settings,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,6 +27,7 @@ interface Props {
 export default function AdminSidebar({ role, name, email }: Props) {
   const pathname = usePathname()
   const router = useRouter()
+  const { settings } = useSiteSettings()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // This sidebar is only ever rendered for super_admin — plain admins use the
@@ -37,6 +39,7 @@ export default function AdminSidebar({ role, name, email }: Props) {
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
     { href: '/admin/branding', label: 'Branding',     icon: ImageIcon },
+    { href: '/admin/settings', label: 'Settings',     icon: Settings },
   ]
 
   function isActive(href: string, exact?: boolean) {
@@ -53,11 +56,14 @@ export default function AdminSidebar({ role, name, email }: Props) {
     <>
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-white/10">
-        <div className="rounded-lg p-1.5" style={{ backgroundColor: 'var(--primary)' }}>
-          <Sprout className="h-4 w-4 text-white" />
+        <div className="rounded-lg p-1.5 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+          {settings.logoUrl
+            ? <img src={settings.logoUrl} alt="" className="h-4 w-4 object-cover rounded" />
+            : <Sprout className="h-4 w-4 text-white" />
+          }
         </div>
         <div>
-          <span className="font-bold text-sm text-white">Kilimo AI</span>
+          <span className="font-bold text-sm text-white">{settings.appName}</span>
           <p className="text-[10px] text-white/40 leading-none mt-0.5">Admin Panel</p>
         </div>
         <Link href="/dashboard" className="ml-auto text-white/40 hover:text-white/70 transition-colors" title="Back to app">

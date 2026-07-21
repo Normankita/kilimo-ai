@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { QRCodeSVG } from 'qrcode.react'
 import { createClient } from '@/lib/supabase/client'
@@ -68,6 +69,7 @@ interface BrandingImage {
 
 export default function LandingPage() {
   const { lang, setLang, t } = useLanguage()
+  const { settings } = useSiteSettings()
   const reduced = useReducedMotion()
   const [scrolled, setScrolled] = useState(false)
   const [brandingImages, setBrandingImages] = useState<BrandingImage[]>([])
@@ -88,9 +90,9 @@ export default function LandingPage() {
   // Auto-advance the hero photo slideshow (paused entirely under reduced motion).
   useEffect(() => {
     if (reduced || brandingImages.length <= 1) return
-    const id = setInterval(() => setHeroSlide(i => (i + 1) % brandingImages.length), 5000)
+    const id = setInterval(() => setHeroSlide(i => (i + 1) % brandingImages.length), settings.heroSlideshowIntervalMs)
     return () => clearInterval(id)
-  }, [reduced, brandingImages.length])
+  }, [reduced, brandingImages.length, settings.heroSlideshowIntervalMs])
 
   const sw = lang === 'sw'
   // Real admin-uploaded photos take over the hero as a full-bleed slideshow;
@@ -121,10 +123,13 @@ export default function LandingPage() {
           className="max-w-5xl mx-auto px-4 flex items-center justify-between h-full transition-all duration-300"
         >
           <div className="flex items-center gap-2">
-            <div className="rounded-lg p-1.5" style={{ backgroundColor: 'var(--primary)' }}>
-              <Sprout className="h-4 w-4 text-white" />
+            <div className="rounded-lg p-1.5 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-4 w-4 object-cover rounded" />
+                : <Sprout className="h-4 w-4 text-white" />
+              }
             </div>
-            <span className="font-bold text-base" style={{ color: 'var(--text)' }}>Kilimo AI</span>
+            <span className="font-bold text-base" style={{ color: 'var(--text)' }}>{settings.appName}</span>
           </div>
           <div className="flex items-center gap-2">
             <LandingWalkthroughModal />
@@ -264,7 +269,7 @@ export default function LandingPage() {
               <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ backgroundColor: 'var(--primary)' }}>
                 <Sprout className="h-3 w-3 text-white" />
               </div>
-              <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Kilimo AI</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{settings.appName}</span>
               <div className="ml-auto flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sw ? 'Mtandaoni' : 'Online'}</span>
@@ -397,8 +402,8 @@ export default function LandingPage() {
             </h2>
             <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
               {sw
-                ? 'Piga picha QR code hii kupata Kilimo AI moja kwa moja kwenye simu yako'
-                : 'Scan this QR code to get Kilimo AI directly on your phone'}
+                ? `Piga picha QR code hii kupata ${settings.appName} moja kwa moja kwenye simu yako`
+                : `Scan this QR code to get ${settings.appName} directly on your phone`}
             </p>
           </motion.div>
 
@@ -486,8 +491,8 @@ export default function LandingPage() {
               </h2>
               <p className="text-white/70 text-sm mb-7 max-w-md mx-auto">
                 {sw
-                  ? 'Jiunge na wakulima wa Tanzania wanaotumia Kilimo AI kuimarisha mashamba yao.'
-                  : 'Join Tanzanian farmers using Kilimo AI to improve their farms.'}
+                  ? `Jiunge na wakulima wa Tanzania wanaotumia ${settings.appName} kuimarisha mashamba yao.`
+                  : `Join Tanzanian farmers using ${settings.appName} to improve their farms.`}
               </p>
               <Link href="/register"
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold text-[var(--primary)] bg-white hover:bg-white/90 shadow-lg transition-all active:scale-[0.97]"
@@ -503,12 +508,15 @@ export default function LandingPage() {
       {/* ── Footer ─────────────────────────────────────────────── */}
       <footer className="border-t py-8 text-center text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
         <div className="flex items-center justify-center gap-1.5 mb-2">
-          <div className="rounded-md p-1" style={{ backgroundColor: 'var(--primary)' }}>
-            <Sprout className="h-3.5 w-3.5 text-white" />
+          <div className="rounded-md p-1 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+            {settings.logoUrl
+              ? <img src={settings.logoUrl} alt="" className="h-3.5 w-3.5 object-cover rounded" />
+              : <Sprout className="h-3.5 w-3.5 text-white" />
+            }
           </div>
-          <span className="font-semibold" style={{ color: 'var(--text)' }}>Kilimo AI</span>
+          <span className="font-semibold" style={{ color: 'var(--text)' }}>{settings.appName}</span>
         </div>
-        <p>{sw ? '© 2026 Kilimo AI. Haki zote zimehifadhiwa.' : '© 2026 Kilimo AI. All rights reserved.'}</p>
+        <p>{sw ? `© 2026 ${settings.appName}. Haki zote zimehifadhiwa.` : `© 2026 ${settings.appName}. All rights reserved.`}</p>
         <div className="flex items-center justify-center gap-4 mt-3">
           <Link href="/login" className="hover:underline">{sw ? 'Ingia' : 'Login'}</Link>
           <Link href="/register" className="hover:underline">{sw ? 'Jisajili' : 'Register'}</Link>

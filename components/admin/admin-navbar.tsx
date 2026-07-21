@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf,
   Users, LogOut, Menu, X, ChevronLeft, Shield, Star,
-  ChevronDown, Image as ImageIcon,
+  ChevronDown, Image as ImageIcon, Settings,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -29,6 +30,7 @@ interface Props {
 export default function AdminNavbar({ role, name, email }: Props) {
   const pathname   = usePathname()
   const router     = useRouter()
+  const { settings } = useSiteSettings()
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
 
@@ -42,6 +44,10 @@ export default function AdminNavbar({ role, name, email }: Props) {
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
     { href: '/admin/branding', label: 'Branding',     icon: ImageIcon },
+    // Settings is super_admin only — this navbar is only ever rendered for
+    // super_admin (see the comment at the top of this file), so no extra
+    // role check is needed here beyond that existing guarantee.
+    { href: '/admin/settings', label: 'Settings',     icon: Settings },
   ]
 
   function isActive(href: string, exact?: boolean) {
@@ -71,11 +77,14 @@ export default function AdminNavbar({ role, name, email }: Props) {
 
           {/* Logo + panel badge */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="bg-[var(--primary)] rounded-lg p-1.5">
-              <Sprout className="h-4 w-4 text-white" />
+            <div className="bg-[var(--primary)] rounded-lg p-1.5 overflow-hidden">
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-4 w-4 object-cover rounded" />
+                : <Sprout className="h-4 w-4 text-white" />
+              }
             </div>
             <div className="hidden sm:block">
-              <span className="font-bold text-sm text-white">Kilimo AI</span>
+              <span className="font-bold text-sm text-white">{settings.appName}</span>
               <p className="text-[9px] leading-none -mt-0.5" style={{ color: roleMeta.color }}>
                 {roleMeta.label} Panel
               </p>

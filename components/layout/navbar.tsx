@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { useTheme } from 'next-themes'
 import {
   Sprout, LayoutDashboard, MessageSquare, TrendingUp,
@@ -47,6 +48,7 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
   const pathname = usePathname()
   const router = useRouter()
   const { t, lang, setLang } = useLanguage()
+  const { settings } = useSiteSettings()
   const { theme, setTheme } = useTheme()
 
   const [menuOpen, setMenuOpen] = useState(false)
@@ -335,11 +337,14 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
 
           {/* ── Logo ─────────────────────────────────────────────── */}
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0 group">
-            <div className="bg-[var(--primary)] rounded-lg p-1.5 transition-transform group-hover:scale-105">
-              <Sprout className="h-4 w-4 text-white" />
+            <div className="bg-[var(--primary)] rounded-lg p-1.5 transition-transform group-hover:scale-105 overflow-hidden">
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-4 w-4 object-cover rounded" />
+                : <Sprout className="h-4 w-4 text-white" />
+              }
             </div>
             <div className="hidden sm:block">
-              <span className="font-bold text-sm text-white">{t.nav.appName}</span>
+              <span className="font-bold text-sm text-white">{settings.appName}</span>
               <p className="text-[9px] text-[var(--sidebar-fg)] leading-none -mt-0.5">{t.nav.appTagline}</p>
             </div>
           </Link>

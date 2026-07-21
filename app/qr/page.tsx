@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
 import { Sprout, Printer, ArrowLeft } from 'lucide-react'
+import { useSiteSettings } from '@/lib/site-settings-context'
 
 export default function QRPage() {
+  const { settings } = useSiteSettings()
   const [appUrl, setAppUrl] = useState(
     process.env.NEXT_PUBLIC_APP_URL ?? 'https://yourapp.vercel.app'
   )
@@ -55,10 +57,13 @@ export default function QRPage() {
         >
           {/* Logo */}
           <div className="flex flex-col items-center mb-6">
-            <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: 'var(--primary)' }}>
-              <Sprout className="h-9 w-9 text-white" />
+            <div className="rounded-2xl p-4 mb-3 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-9 w-9 object-cover rounded" />
+                : <Sprout className="h-9 w-9 text-white" />
+              }
             </div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Kilimo AI</h1>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{settings.appName}</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
               Msaada wa Kilimo Tanzania
             </p>
@@ -80,7 +85,7 @@ export default function QRPage() {
 
           {/* CTA text */}
           <p className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>
-            Scan ili kupakua Kilimo AI
+            Scan ili kupakua {settings.appName}
           </p>
           <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
             Piga picha QR code kwa simu yako
@@ -107,7 +112,7 @@ export default function QRPage() {
 
         {/* Attribution below card, hidden when printing */}
         <p className="no-print text-xs mt-6" style={{ color: 'var(--text-muted)' }}>
-          © 2026 Kilimo AI · Haki zote zimehifadhiwa
+          © 2026 {settings.appName} · Haki zote zimehifadhiwa
         </p>
       </div>
     </>

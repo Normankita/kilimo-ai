@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { fetchOrCreateProfile, roleRedirectPath } from '@/lib/profile'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,6 +31,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t, lang, setLang } = useLanguage()
+  const { settings } = useSiteSettings()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorType, setErrorType] = useState<ErrorType>(null)
@@ -110,12 +112,15 @@ function LoginForm() {
 
         <div className="flex flex-col items-center mb-8">
           <Link href="/">
-            <motion.div className="rounded-2xl p-4 mb-4 cursor-pointer"
+            <motion.div className="rounded-2xl p-4 mb-4 cursor-pointer overflow-hidden"
               style={{ backgroundColor: 'var(--primary)' }} whileHover={{ scale: 1.05 }}>
-              <Sprout className="h-9 w-9 text-white" />
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-9 w-9 object-cover rounded" />
+                : <Sprout className="h-9 w-9 text-white" />
+              }
             </motion.div>
           </Link>
-          <h1 className="text-2xl font-bold text-white">{t.nav.appName}</h1>
+          <h1 className="text-2xl font-bold text-white">{settings.appName}</h1>
           <p className="text-white/50 mt-1 text-sm">{t.nav.appTagline}</p>
         </div>
 
@@ -123,74 +128,88 @@ function LoginForm() {
           <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>{t.auth.formTitle}</h2>
           <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>{t.auth.formSubtitle}</p>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">{t.auth.email}</Label>
-              <Input id="email" type="email" placeholder={t.auth.emailPlaceholder}
-                value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t.auth.password}</Label>
-                <Link href="/forgot-password" className="text-xs hover:underline" style={{ color: 'var(--primary)' }}>
-                  {t.auth.forgotPassword}
-                </Link>
+          {settings.emailLoginEnabled && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t.auth.email}</Label>
+                <Input id="email" type="email" placeholder={t.auth.emailPlaceholder}
+                  value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
               </div>
-              <Input id="password" type="password" placeholder={t.auth.passwordPlaceholder}
-                value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
-            </div>
-
-            {errorMsg && (
-              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg px-3 py-2.5 text-sm"
-                style={{ backgroundColor: 'rgba(185,28,28,0.08)', color: 'var(--danger)', border: '1px solid rgba(185,28,28,0.2)' }}>
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <p>{errorMsg}</p>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t.auth.password}</Label>
+                  {settings.passwordResetEnabled && (
+                    <Link href="/forgot-password" className="text-xs hover:underline" style={{ color: 'var(--primary)' }}>
+                      {t.auth.forgotPassword}
+                    </Link>
+                  )}
                 </div>
-                {errorType === 'unconfirmed' && !resent && (
-                  <button type="button" onClick={handleResend} disabled={resending || !email}
-                    className="mt-2 flex items-center gap-1.5 text-xs font-medium underline"
-                    style={{ color: 'var(--primary)' }}>
-                    <Mail className="h-3 w-3" />
-                    {resending ? t.auth.sending : t.auth.resendConfirmation}
-                  </button>
-                )}
-                {resent && <p className="mt-1.5 text-xs" style={{ color: 'var(--primary)' }}>✓ {t.auth.resetSent}</p>}
-              </motion.div>
-            )}
+                <Input id="password" type="password" placeholder={t.auth.passwordPlaceholder}
+                  value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+              </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t.auth.loggingIn : t.auth.login}
-            </Button>
-          </form>
+              {errorMsg && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-lg px-3 py-2.5 text-sm"
+                  style={{ backgroundColor: 'rgba(185,28,28,0.08)', color: 'var(--danger)', border: '1px solid rgba(185,28,28,0.2)' }}>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <p>{errorMsg}</p>
+                  </div>
+                  {errorType === 'unconfirmed' && !resent && (
+                    <button type="button" onClick={handleResend} disabled={resending || !email}
+                      className="mt-2 flex items-center gap-1.5 text-xs font-medium underline"
+                      style={{ color: 'var(--primary)' }}>
+                      <Mail className="h-3 w-3" />
+                      {resending ? t.auth.sending : t.auth.resendConfirmation}
+                    </button>
+                  )}
+                  {resent && <p className="mt-1.5 text-xs" style={{ color: 'var(--primary)' }}>✓ {t.auth.resetSent}</p>}
+                </motion.div>
+              )}
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>au</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
-          </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? t.auth.loggingIn : t.auth.login}
+              </Button>
+            </form>
+          )}
 
-          {/* Google OAuth */}
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-2.5 h-10 rounded-lg border text-sm font-medium transition-colors hover:bg-[var(--surface-2)] disabled:opacity-60"
-            style={{ borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}>
-            <GoogleIcon />
-            {googleLoading
-              ? (lang === 'sw' ? 'Inaelekeza...' : 'Redirecting...')
-              : (lang === 'sw' ? 'Ingia na Google' : 'Continue with Google')}
-          </button>
+          {settings.emailLoginEnabled && settings.googleLoginEnabled && (
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>au</span>
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
+            </div>
+          )}
 
-          <p className="text-center text-sm mt-4" style={{ color: 'var(--text-muted)' }}>
-            {t.auth.noAccount}{' '}
-            <Link href="/register" className="font-medium hover:underline" style={{ color: 'var(--primary)' }}>
-              {t.auth.registerHere}
-            </Link>
-          </p>
+          {settings.googleLoginEnabled && (
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="w-full flex items-center justify-center gap-2.5 h-10 rounded-lg border text-sm font-medium transition-colors hover:bg-[var(--surface-2)] disabled:opacity-60"
+              style={{ borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}>
+              <GoogleIcon />
+              {googleLoading
+                ? (lang === 'sw' ? 'Inaelekeza...' : 'Redirecting...')
+                : (lang === 'sw' ? 'Ingia na Google' : 'Continue with Google')}
+            </button>
+          )}
+
+          {!settings.emailLoginEnabled && !settings.googleLoginEnabled && (
+            <p className="text-center text-sm py-4" style={{ color: 'var(--text-muted)' }}>
+              {lang === 'sw' ? 'Hakuna njia ya kuingia iliyowashwa kwa sasa.' : 'No sign-in method is currently enabled.'}
+            </p>
+          )}
+
+          {settings.signupsEnabled && (
+            <p className="text-center text-sm mt-4" style={{ color: 'var(--text-muted)' }}>
+              {t.auth.noAccount}{' '}
+              <Link href="/register" className="font-medium hover:underline" style={{ color: 'var(--primary)' }}>
+                {t.auth.registerHere}
+              </Link>
+            </p>
+          )}
         </div>
       </motion.div>
     </div>

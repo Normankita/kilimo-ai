@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +17,7 @@ function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t, lang, setLang } = useLanguage()
+  const { settings } = useSiteSettings()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -68,10 +70,13 @@ function ResetPasswordForm() {
       transition={{ duration: 0.35 }}
     >
       <div className="flex flex-col items-center mb-8">
-        <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: 'var(--primary)' }}>
-          <Sprout className="h-9 w-9 text-white" />
+        <div className="rounded-2xl p-4 mb-4 overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+          {settings.logoUrl
+            ? <img src={settings.logoUrl} alt="" className="h-9 w-9 object-cover rounded" />
+            : <Sprout className="h-9 w-9 text-white" />
+          }
         </div>
-        <h1 className="text-2xl font-bold text-white">{t.nav.appName}</h1>
+        <h1 className="text-2xl font-bold text-white">{settings.appName}</h1>
       </div>
 
       <div className="rounded-2xl p-6 shadow-2xl" style={{ backgroundColor: 'var(--surface)' }}>

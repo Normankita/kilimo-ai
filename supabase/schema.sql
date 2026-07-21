@@ -264,6 +264,41 @@ CREATE POLICY "branding_images_write"
   WITH CHECK (get_my_role() IN ('admin', 'super_admin'));
 
 
+-- ── 4c. SITE SETTINGS ────────────────────────────────────────────────────────
+-- Single-row app-wide config, managed only by super_admin (app/admin/settings/page.tsx).
+
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  id                         int PRIMARY KEY DEFAULT 1 CHECK (id = 1), -- enforces a single row
+  app_name                   text NOT NULL DEFAULT 'Kilimo AI',
+  logo_url                   text,
+  accent_color               text NOT NULL DEFAULT '#2a5c3f',
+  hero_slideshow_interval_ms int NOT NULL DEFAULT 5000,
+  google_login_enabled       boolean NOT NULL DEFAULT true,
+  email_login_enabled        boolean NOT NULL DEFAULT true,
+  signups_enabled            boolean NOT NULL DEFAULT true,
+  password_reset_enabled     boolean NOT NULL DEFAULT true,
+  updated_at                 timestamptz NOT NULL DEFAULT now()
+);
+
+INSERT INTO public.site_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "site_settings_select" ON public.site_settings;
+DROP POLICY IF EXISTS "site_settings_write"  ON public.site_settings;
+
+-- Public read — login/register/landing pages are unauthenticated.
+CREATE POLICY "site_settings_select"
+  ON public.site_settings FOR SELECT
+  USING (true);
+
+-- Only super_admin may change site-wide config — not plain admin.
+CREATE POLICY "site_settings_write"
+  ON public.site_settings FOR ALL
+  USING     (get_my_role() = 'super_admin')
+  WITH CHECK (get_my_role() = 'super_admin');
+
+
 -- ── 5. AI CONVERSATIONS ─────────────────────────────────────────────────────
 -- One row per user; the full message array is stored as JSONB.
 -- Drop and recreate because the old schema had a different shape (per-message rows).

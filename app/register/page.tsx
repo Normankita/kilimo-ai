@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +27,7 @@ function GoogleIcon() {
 export default function RegisterPage() {
   const router = useRouter()
   const { t, lang, setLang } = useLanguage()
+  const { settings } = useSiteSettings()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -118,72 +120,101 @@ export default function RegisterPage() {
 
         <div className="flex flex-col items-center mb-8">
           <Link href="/">
-            <div className="rounded-2xl p-4 mb-4 cursor-pointer" style={{ backgroundColor: 'var(--primary)' }}>
-              <Sprout className="h-9 w-9 text-white" />
+            <div className="rounded-2xl p-4 mb-4 cursor-pointer overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
+              {settings.logoUrl
+                ? <img src={settings.logoUrl} alt="" className="h-9 w-9 object-cover rounded" />
+                : <Sprout className="h-9 w-9 text-white" />
+              }
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-white">{t.nav.appName}</h1>
+          <h1 className="text-2xl font-bold text-white">{settings.appName}</h1>
           <p className="text-white/50 mt-1 text-sm">{t.nav.appTagline}</p>
         </div>
 
         <div className="rounded-2xl p-6 shadow-2xl" style={{ backgroundColor: 'var(--surface)' }}>
-          <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>{t.auth.registerTitle}</h2>
-          <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>{t.auth.registerSubtitle}</p>
+          {!settings.signupsEnabled ? (
+            <>
+              <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>
+                {lang === 'sw' ? 'Usajili Umefungwa' : 'Signups Are Closed'}
+              </h2>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                {lang === 'sw'
+                  ? 'Usajili mpya haupatikani kwa sasa. Wasiliana na msimamizi wako.'
+                  : 'New signups are currently disabled. Contact an administrator.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>{t.auth.registerTitle}</h2>
+              <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>{t.auth.registerSubtitle}</p>
 
-          {/* Google first for new signups */}
-          <button
-            type="button"
-            onClick={handleGoogleRegister}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-2.5 h-10 rounded-lg border text-sm font-medium transition-colors hover:bg-[var(--surface-2)] disabled:opacity-60 mb-4"
-            style={{ borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}>
-            <GoogleIcon />
-            {googleLoading
-              ? (lang === 'sw' ? 'Inaelekeza...' : 'Redirecting...')
-              : (lang === 'sw' ? 'Jiandikishe na Google' : 'Sign up with Google')}
-          </button>
+              {settings.googleLoginEnabled && (
+                <button
+                  type="button"
+                  onClick={handleGoogleRegister}
+                  disabled={googleLoading}
+                  className="w-full flex items-center justify-center gap-2.5 h-10 rounded-lg border text-sm font-medium transition-colors hover:bg-[var(--surface-2)] disabled:opacity-60 mb-4"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}>
+                  <GoogleIcon />
+                  {googleLoading
+                    ? (lang === 'sw' ? 'Inaelekeza...' : 'Redirecting...')
+                    : (lang === 'sw' ? 'Jiandikishe na Google' : 'Sign up with Google')}
+                </button>
+              )}
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>au tumia barua pepe</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
-          </div>
+              {settings.googleLoginEnabled && settings.emailLoginEnabled && (
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>au tumia barua pepe</span>
+                  <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border)' }} />
+                </div>
+              )}
 
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name">{t.auth.fullName}</Label>
-              <Input id="name" placeholder={t.auth.namePlaceholder}
-                value={fullName} onChange={e => setFullName(e.target.value)} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="location">{t.auth.location}</Label>
-              <Input id="location" placeholder={t.auth.locationPlaceholder}
-                value={location} onChange={e => setLocation(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">{t.auth.email}</Label>
-              <Input id="email" type="email" placeholder={t.auth.emailPlaceholder}
-                value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">{t.auth.passwordHint}</Label>
-              <Input id="password" type="password" placeholder={t.auth.passwordPlaceholder}
-                value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
-            </div>
+              {settings.emailLoginEnabled && (
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name">{t.auth.fullName}</Label>
+                    <Input id="name" placeholder={t.auth.namePlaceholder}
+                      value={fullName} onChange={e => setFullName(e.target.value)} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="location">{t.auth.location}</Label>
+                    <Input id="location" placeholder={t.auth.locationPlaceholder}
+                      value={location} onChange={e => setLocation(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email">{t.auth.email}</Label>
+                    <Input id="email" type="email" placeholder={t.auth.emailPlaceholder}
+                      value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password">{t.auth.passwordHint}</Label>
+                    <Input id="password" type="password" placeholder={t.auth.passwordPlaceholder}
+                      value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
+                  </div>
 
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
-                style={{ backgroundColor: 'rgba(185,28,28,0.08)', color: 'var(--danger)', border: '1px solid rgba(185,28,28,0.2)' }}>
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                {error}
-              </motion.div>
-            )}
+                  {error && (
+                    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
+                      style={{ backgroundColor: 'rgba(185,28,28,0.08)', color: 'var(--danger)', border: '1px solid rgba(185,28,28,0.2)' }}>
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      {error}
+                    </motion.div>
+                  )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t.auth.registering : t.auth.register}
-            </Button>
-          </form>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t.auth.registering : t.auth.register}
+                  </Button>
+                </form>
+              )}
+
+              {!settings.emailLoginEnabled && !settings.googleLoginEnabled && (
+                <p className="text-center text-sm py-4" style={{ color: 'var(--text-muted)' }}>
+                  {lang === 'sw' ? 'Hakuna njia ya kujiandikisha iliyowashwa kwa sasa.' : 'No signup method is currently enabled.'}
+                </p>
+              )}
+            </>
+          )}
 
           <p className="text-center text-sm mt-4" style={{ color: 'var(--text-muted)' }}>
             {t.auth.haveAccount}{' '}
