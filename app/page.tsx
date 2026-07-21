@@ -71,6 +71,7 @@ export default function LandingPage() {
   const reduced = useReducedMotion()
   const [scrolled, setScrolled] = useState(false)
   const [brandingImages, setBrandingImages] = useState<BrandingImage[]>([])
+  const [heroSlide, setHeroSlide] = useState(0)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20)
@@ -84,7 +85,18 @@ export default function LandingPage() {
       .then(({ data }) => setBrandingImages(data ?? []))
   }, [])
 
+  // Auto-advance the hero photo slideshow (paused entirely under reduced motion).
+  useEffect(() => {
+    if (reduced || brandingImages.length <= 1) return
+    const id = setInterval(() => setHeroSlide(i => (i + 1) % brandingImages.length), 5000)
+    return () => clearInterval(id)
+  }, [reduced, brandingImages.length])
+
   const sw = lang === 'sw'
+  // Real admin-uploaded photos take over the hero as a full-bleed slideshow;
+  // with none uploaded yet, the original illustrated gradient hero is used
+  // (see app/admin/branding/page.tsx for uploading them).
+  const heroHasPhoto = brandingImages.length > 0
 
   const fade = (delay = 0) => reduced ? {} : ({
     initial: { opacity: 0, y: 16 },
@@ -134,17 +146,69 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(160deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 60%)' }} />
-        <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-5 pointer-events-none"
-          style={{ backgroundColor: 'var(--primary)' }} />
+      <section className={`relative overflow-hidden ${heroHasPhoto ? 'flex items-center min-h-[85vh]' : ''}`}>
+        {heroHasPhoto ? (
+          <>
+            {/* Full-bleed photo slideshow — continuous slow zoom, crossfade between slides */}
+            <div className="absolute inset-0 overflow-hidden">
+              {brandingImages.map((img, i) => (
+                <motion.img
+                  key={img.id}
+                  src={img.image_url}
+                  alt={img.caption ?? ''}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  initial={{ opacity: 0 }}
+                  animate={reduced
+                    ? { opacity: i === heroSlide ? 1 : 0 }
+                    : { opacity: i === heroSlide ? 1 : 0, scale: [1, 1.06] }
+                  }
+                  transition={{
+                    opacity: { duration: 1.2, ease: 'easeInOut' },
+                    scale: { duration: 10, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+                  }}
+                />
+              ))}
+              {/* Dark gradient so white text stays legible over any photo */}
+              <div className="absolute inset-0" style={{
+                background: 'linear-gradient(180deg, rgba(10,20,12,0.5) 0%, rgba(10,20,12,0.65) 55%, rgba(10,20,12,0.85) 100%)',
+              }} />
+            </div>
 
-        <div className="max-w-5xl mx-auto px-4 py-16 md:py-24 text-center">
+            {/* Slide indicators */}
+            {brandingImages.length > 1 && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                {brandingImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setHeroSlide(i)}
+                    aria-label={`Slide ${i + 1}`}
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: i === heroSlide ? '22px' : '7px',
+                      backgroundColor: i === heroSlide ? '#ffffff' : 'rgba(255,255,255,0.4)',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Illustrated gradient background — shown until an admin uploads real photos */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'linear-gradient(160deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 60%)' }} />
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-5 pointer-events-none"
+              style={{ backgroundColor: 'var(--primary)' }} />
+          </>
+        )}
+
+        <div className={`relative z-1 max-w-5xl mx-auto px-4 text-center ${heroHasPhoto ? 'py-16 md:py-20' : 'py-16 md:py-24'}`}>
           <motion.div {...fade(0)}>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
-              style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)', color: 'var(--primary)' }}>
+              style={heroHasPhoto
+                ? { backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }
+                : { backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)', color: 'var(--primary)' }
+              }>
               <Sprout className="h-3.5 w-3.5" />
               {sw ? 'Teknolojia ya Kilimo, Tanzania' : 'Smart Farming Technology, Tanzania'}
             </span>
@@ -152,17 +216,17 @@ export default function LandingPage() {
 
           <motion.h1
             className="text-4xl md:text-6xl font-bold leading-tight mb-4"
-            style={{ color: 'var(--text)' }}
+            style={{ color: heroHasPhoto ? '#fff' : 'var(--text)' }}
             {...fade(0.06)}
           >
             {sw ? 'Kilimo Bora,' : 'Better Farming,'}
             <br />
-            <span style={{ color: 'var(--primary)' }}>{sw ? 'Maisha Bora' : 'Better Life'}</span>
+            <span style={{ color: heroHasPhoto ? '#7fd99a' : 'var(--primary)' }}>{sw ? 'Maisha Bora' : 'Better Life'}</span>
           </motion.h1>
 
           <motion.p
             className="text-base md:text-lg max-w-xl mx-auto mb-8 leading-relaxed"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: heroHasPhoto ? 'rgba(255,255,255,0.85)' : 'var(--text-muted)' }}
             {...fade(0.12)}
           >
             {sw
@@ -179,7 +243,10 @@ export default function LandingPage() {
             </Link>
             <a href="#features"
               className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl text-sm font-semibold border transition-all"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}>
+              style={heroHasPhoto
+                ? { borderColor: 'rgba(255,255,255,0.35)', color: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' }
+                : { borderColor: 'var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }
+              }>
               {sw ? 'Jifunze Zaidi' : 'Learn More'}
             </a>
           </motion.div>
@@ -233,48 +300,13 @@ export default function LandingPage() {
           <motion.div className="flex justify-center gap-8 mt-10" {...fade(0.3)}>
             {STATS.map((s, i) => (
               <div key={i} className="text-center">
-                <div className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>{s.value}</div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{sw ? s.sw : s.en}</div>
+                <div className="text-2xl font-bold" style={{ color: heroHasPhoto ? '#7fd99a' : 'var(--primary)' }}>{s.value}</div>
+                <div className="text-xs mt-0.5" style={{ color: heroHasPhoto ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)' }}>{sw ? s.sw : s.en}</div>
               </div>
             ))}
           </motion.div>
         </div>
       </section>
-
-      {/* ── Branding gallery — real photos, admin-managed ─────────
-          Omitted entirely until an admin uploads at least one image
-          (app/admin/branding/page.tsx), so a fresh install never
-          shows a broken/empty section here. ──────────────────── */}
-      {brandingImages.length > 0 && (
-        <section className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div className="text-center mb-10" {...fade()}>
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text)' }}>
-                {sw ? 'Wakulima Halisi' : 'Real Farmers'}
-              </h2>
-              <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
-                {sw ? 'Kilimo AI kikitumika mashambani Tanzania' : 'Kilimo AI in use on farms across Tanzania'}
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {brandingImages.map((img, i) => (
-                <motion.div
-                  key={img.id}
-                  className="rounded-2xl overflow-hidden border"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}
-                  {...fade(i * 0.06)}
-                >
-                  <img src={img.image_url} alt={img.caption ?? ''} className="w-full h-40 object-cover" />
-                  {img.caption && (
-                    <p className="text-xs px-3 py-2" style={{ color: 'var(--text-muted)' }}>{img.caption}</p>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── Features ───────────────────────────────────────────── */}
       <section id="features" className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
