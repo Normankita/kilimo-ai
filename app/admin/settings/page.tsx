@@ -30,7 +30,7 @@ interface FormState {
 
 function Toggle({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5">
+    <div className="flex items-center justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
       <div className="min-w-0">
         <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{label}</p>
         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{description}</p>
@@ -162,7 +162,7 @@ export default function AdminSettingsPage() {
   if (!authorized) return null
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-5 max-w-6xl">
       <div>
         <h1 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}>
           <ShieldCheck className="h-5 w-5" style={{ color: 'var(--primary)' }} />
@@ -269,7 +269,7 @@ export default function AdminSettingsPage() {
                     Authentication
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 [&>*:last-child]:border-b-0 sm:[&>*:nth-last-child(-n+2)]:border-b-0">
                   <Toggle
                     checked={form.google_login_enabled}
                     onChange={v => setForm(f => f && { ...f, google_login_enabled: v })}
@@ -307,7 +307,7 @@ export default function AdminSettingsPage() {
                     What a plain admin may do on the Users page. Super admins always have full access, regardless of these switches.
                   </p>
                 </CardHeader>
-                <CardContent className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 [&>*:last-child]:border-b-0 sm:[&>*:nth-last-child(-n+2)]:border-b-0">
                   <Toggle
                     checked={form.admin_can_edit_users}
                     onChange={v => setForm(f => f && { ...f, admin_can_edit_users: v })}
