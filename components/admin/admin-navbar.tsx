@@ -8,7 +8,7 @@ import type { UserRole } from '@/lib/profile'
 import {
   Sprout, LayoutDashboard, TrendingUp, PlaySquare, Leaf,
   Users, LogOut, Menu, X, ChevronLeft, Shield, Star,
-  ChevronDown, Image as ImageIcon, Settings,
+  ChevronDown, Image as ImageIcon, Settings, ScrollText,
 } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -44,6 +44,7 @@ export default function AdminNavbar({ role, name, email }: Props) {
     { href: '/admin/content', label: 'Education',     icon: PlaySquare },
     { href: '/admin/crops',   label: 'Crop Info',     icon: Leaf },
     { href: '/admin/branding', label: 'Branding',     icon: ImageIcon },
+    { href: '/admin/audit-log', label: 'Audit Log',   icon: ScrollText },
     // Settings is super_admin only — this navbar is only ever rendered for
     // super_admin (see the comment at the top of this file), so no extra
     // role check is needed here beyond that existing guarantee.

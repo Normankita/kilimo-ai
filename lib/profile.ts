@@ -14,6 +14,7 @@ export interface Profile {
   is_active?: boolean
   last_active_at?: string | null
   first_active_at?: string | null
+  deleted_at?: string | null
   created_at?: string
 }
 

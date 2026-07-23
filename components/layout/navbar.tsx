@@ -10,7 +10,7 @@ import {
   Sprout, LayoutDashboard, MessageSquare, TrendingUp,
   GraduationCap, LogOut, Menu, X, Languages, Sun, Moon,
   Monitor, User, QrCode, ChevronDown, ShieldCheck, Wheat,
-  Users, PlaySquare, Leaf, Image as ImageIcon,
+  Users, PlaySquare, Leaf, Image as ImageIcon, ScrollText,
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -27,7 +27,7 @@ const ROLE_META: Record<string, { label: string; color: string; icon: React.Elem
   super_admin: { label: 'Super Admin', color: '#a855f7', icon: ShieldCheck },
 }
 
-const ADMIN_TOOL_LINKS = [
+const ADMIN_TOOL_LINKS_BASE = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/market', label: 'Market Prices', icon: TrendingUp },
@@ -59,6 +59,12 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
 
   const dropRef = useRef<HTMLDivElement>(null)
   const adminMenuRef = useRef<HTMLDivElement>(null)
+
+  // Audit Log only shows for a plain admin once a super_admin grants it via
+  // /admin/settings — super_admin themselves always has it (separate shell).
+  const adminToolLinks = settings.adminCanViewAuditLog
+    ? [...ADMIN_TOOL_LINKS_BASE, { href: '/admin/audit-log', label: 'Audit Log', icon: ScrollText }]
+    : ADMIN_TOOL_LINKS_BASE
 
   const navLinks = [
     { href: '/dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
@@ -223,7 +229,7 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
           )}
 
           {/* Admin tools — merged directly into the same nav, no separate mode */}
-          {navProfile?.role === 'admin' && ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+          {navProfile?.role === 'admin' && adminToolLinks.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
@@ -426,7 +432,7 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
                         boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                       }}
                     >
-                      {ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+                      {adminToolLinks.map(({ href, label, icon: Icon }) => (
                         <Link
                           key={href}
                           href={href}
@@ -523,7 +529,7 @@ export default function Navbar({ containerClassName = 'max-w-6xl' }: NavbarProps
 
             {navProfile?.role === 'admin' && (
               <div className="mx-3 mt-1.5 pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                {ADMIN_TOOL_LINKS.map(({ href, label, icon: Icon }) => (
+                {adminToolLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}

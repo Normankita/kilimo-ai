@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ImagePlus, ImageIcon, Palette, Clock, ShieldCheck } from 'lucide-react'
+import { ImagePlus, ImageIcon, Palette, Clock, ShieldCheck, UserCog } from 'lucide-react'
 
 interface FormState {
   app_name: string
@@ -20,6 +20,12 @@ interface FormState {
   email_login_enabled: boolean
   signups_enabled: boolean
   password_reset_enabled: boolean
+  admin_can_edit_users: boolean
+  admin_can_change_roles: boolean
+  admin_can_toggle_active: boolean
+  admin_can_reset_passwords: boolean
+  admin_can_delete_users: boolean
+  admin_can_view_audit_log: boolean
 }
 
 function Toggle({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description: string }) {
@@ -83,6 +89,12 @@ export default function AdminSettingsPage() {
           email_login_enabled: data.email_login_enabled,
           signups_enabled: data.signups_enabled,
           password_reset_enabled: data.password_reset_enabled,
+          admin_can_edit_users: data.admin_can_edit_users,
+          admin_can_change_roles: data.admin_can_change_roles,
+          admin_can_toggle_active: data.admin_can_toggle_active,
+          admin_can_reset_passwords: data.admin_can_reset_passwords,
+          admin_can_delete_users: data.admin_can_delete_users,
+          admin_can_view_audit_log: data.admin_can_view_audit_log,
         })
       }
       setLoading(false)
@@ -128,6 +140,12 @@ export default function AdminSettingsPage() {
       email_login_enabled: form.email_login_enabled,
       signups_enabled: form.signups_enabled,
       password_reset_enabled: form.password_reset_enabled,
+      admin_can_edit_users: form.admin_can_edit_users,
+      admin_can_change_roles: form.admin_can_change_roles,
+      admin_can_toggle_active: form.admin_can_toggle_active,
+      admin_can_reset_passwords: form.admin_can_reset_passwords,
+      admin_can_delete_users: form.admin_can_delete_users,
+      admin_can_view_audit_log: form.admin_can_view_audit_log,
       updated_at: new Date().toISOString(),
     }).eq('id', 1)
 
@@ -243,40 +261,92 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Right column */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-                  Authentication
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="divide-y" style={{ borderColor: 'var(--border)' }}>
-                <Toggle
-                  checked={form.google_login_enabled}
-                  onChange={v => setForm(f => f && { ...f, google_login_enabled: v })}
-                  label="Google Login"
-                  description="Show the 'Continue with Google' option on login/register"
-                />
-                <Toggle
-                  checked={form.email_login_enabled}
-                  onChange={v => setForm(f => f && { ...f, email_login_enabled: v })}
-                  label="Email/Password Login"
-                  description="Show the email and password form on login/register"
-                />
-                <Toggle
-                  checked={form.signups_enabled}
-                  onChange={v => setForm(f => f && { ...f, signups_enabled: v })}
-                  label="Allow New Signups"
-                  description="Let new farmers register for an account"
-                />
-                <Toggle
-                  checked={form.password_reset_enabled}
-                  onChange={v => setForm(f => f && { ...f, password_reset_enabled: v })}
-                  label="Allow Password Reset"
-                  description="Let users request a password reset link"
-                />
-              </CardContent>
-            </Card>
+            <div className="space-y-5">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                    Authentication
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                  <Toggle
+                    checked={form.google_login_enabled}
+                    onChange={v => setForm(f => f && { ...f, google_login_enabled: v })}
+                    label="Google Login"
+                    description="Show the 'Continue with Google' option on login/register"
+                  />
+                  <Toggle
+                    checked={form.email_login_enabled}
+                    onChange={v => setForm(f => f && { ...f, email_login_enabled: v })}
+                    label="Email/Password Login"
+                    description="Show the email and password form on login/register"
+                  />
+                  <Toggle
+                    checked={form.signups_enabled}
+                    onChange={v => setForm(f => f && { ...f, signups_enabled: v })}
+                    label="Allow New Signups"
+                    description="Let new farmers register for an account"
+                  />
+                  <Toggle
+                    checked={form.password_reset_enabled}
+                    onChange={v => setForm(f => f && { ...f, password_reset_enabled: v })}
+                    label="Allow Password Reset"
+                    description="Let users request a password reset link"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <UserCog className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                    Admin Permissions
+                  </CardTitle>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    What a plain admin may do on the Users page. Super admins always have full access, regardless of these switches.
+                  </p>
+                </CardHeader>
+                <CardContent className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                  <Toggle
+                    checked={form.admin_can_edit_users}
+                    onChange={v => setForm(f => f && { ...f, admin_can_edit_users: v })}
+                    label="Edit User Details"
+                    description="Edit name, location, phone, farm location, bio"
+                  />
+                  <Toggle
+                    checked={form.admin_can_change_roles}
+                    onChange={v => setForm(f => f && { ...f, admin_can_change_roles: v })}
+                    label="Change Roles"
+                    description="Promote a farmer to admin or demote back"
+                  />
+                  <Toggle
+                    checked={form.admin_can_toggle_active}
+                    onChange={v => setForm(f => f && { ...f, admin_can_toggle_active: v })}
+                    label="Activate/Deactivate Accounts"
+                    description="Suspend or restore login access"
+                  />
+                  <Toggle
+                    checked={form.admin_can_reset_passwords}
+                    onChange={v => setForm(f => f && { ...f, admin_can_reset_passwords: v })}
+                    label="Reset Passwords"
+                    description="Send reset links or set a password directly"
+                  />
+                  <Toggle
+                    checked={form.admin_can_delete_users}
+                    onChange={v => setForm(f => f && { ...f, admin_can_delete_users: v })}
+                    label="Delete Accounts"
+                    description="Soft-delete accounts (only a super admin can restore one)"
+                  />
+                  <Toggle
+                    checked={form.admin_can_view_audit_log}
+                    onChange={v => setForm(f => f && { ...f, admin_can_view_audit_log: v })}
+                    label="View Audit Log"
+                    description="Off by default — grants access to the full action history"
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           <div className="flex justify-end">

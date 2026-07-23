@@ -12,6 +12,16 @@ export interface SiteSettings {
   emailLoginEnabled: boolean
   signupsEnabled: boolean
   passwordResetEnabled: boolean
+  // What a plain admin may do to other users' accounts — super_admin is never
+  // limited by these (enforced both here and in the DB trigger).
+  adminCanEditUsers: boolean
+  adminCanChangeRoles: boolean
+  adminCanToggleActive: boolean
+  adminCanResetPasswords: boolean
+  adminCanDeleteUsers: boolean
+  // Opt-in grant (defaults false) — a plain admin can't see the audit trail
+  // unless a super_admin explicitly turns this on.
+  adminCanViewAuditLog: boolean
 }
 
 // Mirrors the defaults in supabase/schema.sql's site_settings table, so the
@@ -25,6 +35,12 @@ const DEFAULT_SETTINGS: SiteSettings = {
   emailLoginEnabled: true,
   signupsEnabled: true,
   passwordResetEnabled: true,
+  adminCanEditUsers: true,
+  adminCanChangeRoles: true,
+  adminCanToggleActive: true,
+  adminCanResetPasswords: true,
+  adminCanDeleteUsers: true,
+  adminCanViewAuditLog: false,
 }
 
 interface SiteSettingsContextType {
@@ -54,6 +70,12 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
       emailLoginEnabled: data.email_login_enabled ?? true,
       signupsEnabled: data.signups_enabled ?? true,
       passwordResetEnabled: data.password_reset_enabled ?? true,
+      adminCanEditUsers: data.admin_can_edit_users ?? true,
+      adminCanChangeRoles: data.admin_can_change_roles ?? true,
+      adminCanToggleActive: data.admin_can_toggle_active ?? true,
+      adminCanResetPasswords: data.admin_can_reset_passwords ?? true,
+      adminCanDeleteUsers: data.admin_can_delete_users ?? true,
+      adminCanViewAuditLog: data.admin_can_view_audit_log ?? false,
     }
     setSettings(next)
     document.documentElement.style.setProperty('--primary', next.accentColor)

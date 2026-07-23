@@ -7,13 +7,15 @@ import { useLanguage } from '@/lib/language-context'
 import { Badge } from '@/components/ui/badge'
 import { PlayCircle, ExternalLink, BookOpen } from 'lucide-react'
 
-const SEED = [
-  { id: 1, title: 'Jinsi ya Kupanda Mahindi Tanzania', description: 'Mwongozo kamili wa kupanda mahindi kwa wakulima wadogo, kuandaa shamba, kupanda, na kutunza.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'kupanda', crop_name: 'Mahindi', language: 'Kiswahili' },
-  { id: 2, title: 'Umwagiliaji Bora kwa Mboga', description: 'Njia rahisi za kumwagilia mboga kwa matumizi ya maji kidogo lakini mavuno makubwa.', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'umwagiliaji', crop_name: 'Mboga', language: 'Kiswahili' },
-  { id: 3, title: 'Magonjwa ya Nyanya na Jinsi ya Kuyatibu', description: 'Tambua magonjwa ya nyanya mapema na uchague dawa sahihi za asili na za duka.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'magonjwa', crop_name: 'Nyanya', language: 'Kiswahili' },
-  { id: 4, title: 'Kulinda Mazao dhidi ya Wadudu', description: 'Mbinu za asili na za kisayansi za kupigana na viwavi, nzi, na wadudu wengine.', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'magonjwa', crop_name: 'Mazao Mengi', language: 'Kiswahili' },
-  { id: 5, title: 'Mbolea Bora kwa Udongo wa Tanzania', description: 'Aina za mbolea, wakati wa kutumia, na kiasi kinachofaa kwa udongo wa Tanzania.', video_url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', category: 'kupanda', crop_name: 'Mazao Mengi', language: 'Kiswahili' },
-]
+interface VideoItem {
+  id: number
+  title: string
+  description: string
+  video_url: string
+  category: string
+  crop_name: string
+  language: string
+}
 
 const CATEGORY_META: Record<string, { label: string; labelEn: string; color: string }> = {
   all: { label: 'Zote', labelEn: 'All', color: 'var(--primary)' },
@@ -26,11 +28,10 @@ function getYouTubeId(url: string) {
   return url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null
 }
 
-type VideoItem = typeof SEED[number]
-
 export default function LearnPage() {
   const { t, lang } = useLanguage()
-  const [content, setContent] = useState<VideoItem[]>(SEED)
+  const [content, setContent] = useState<VideoItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
 
   useEffect(() => {
@@ -39,7 +40,10 @@ export default function LearnPage() {
       .from('educational_content')
       .select('*')
       .order('id', { ascending: true })
-      .then(({ data }) => { if (data?.length) setContent(data) })
+      .then(({ data }) => {
+        setContent(data ?? [])
+        setLoading(false)
+      })
   }, [])
 
   const filtered = activeCategory === 'all'
@@ -76,6 +80,13 @@ export default function LearnPage() {
       </div>
 
       {/* Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="aspect-video rounded-xl shimmer" />
+          ))}
+        </div>
+      ) : (
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         layout
@@ -149,8 +160,9 @@ export default function LearnPage() {
           })}
         </AnimatePresence>
       </motion.div>
+      )}
 
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
           <BookOpen className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--border)' }} />
           <p style={{ color: 'var(--text-muted)' }}>{t.learn.noContent}</p>

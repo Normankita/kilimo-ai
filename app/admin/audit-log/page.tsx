@@ -31,6 +31,8 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   profile_edit: 'Profile edit',
   password_reset_direct: 'Password set',
   password_reset_link: 'Reset link sent',
+  delete: 'Delete',
+  restore: 'Restore',
 }
 
 const ACTION_COLORS: Record<AuditAction, 'success' | 'secondary' | 'destructive' | 'outline'> = {
@@ -40,6 +42,8 @@ const ACTION_COLORS: Record<AuditAction, 'success' | 'secondary' | 'destructive'
   profile_edit: 'outline',
   password_reset_direct: 'outline',
   password_reset_link: 'outline',
+  delete: 'destructive',
+  restore: 'success',
 }
 
 export default function AuditLogPage() {
@@ -61,9 +65,28 @@ export default function AuditLogPage() {
       if (!user) { router.replace('/login'); return }
 
       const { data: viewer } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (viewer?.role !== 'super_admin') { router.replace('/admin'); return }
-      setAuthorized(true)
-      setChecking(false)
+      if (viewer?.role !== 'super_admin') {
+        // A plain admin may still be granted access via the
+        // admin_can_view_audit_log toggle — fetched directly here (rather
+        // than trusting the shared SiteSettingsProvider) to avoid a race
+        // where its own fetch hasn't resolved yet and would wrongly redirect.
+        if (viewer?.role === 'admin') {
+          const { data: siteSettings } = await supabase.from('site_settings').select('admin_can_view_audit_log').eq('id', 1).single()
+          if (siteSettings?.admin_can_view_audit_log) {
+            setAuthorized(true)
+            setChecking(false)
+          } else {
+            router.replace('/admin')
+            return
+          }
+        } else {
+          router.replace('/admin')
+          return
+        }
+      } else {
+        setAuthorized(true)
+        setChecking(false)
+      }
 
       const { data, error } = await supabase
         .from('audit_logs')

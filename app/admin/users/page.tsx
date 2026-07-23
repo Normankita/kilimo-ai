@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
-import { Users, Search, Pencil, Ban, CheckCircle2, Mail, KeyRound, Circle, WifiOff, TrendingUp, Eye } from 'lucide-react'
+import { Users, Search, Pencil, Ban, CheckCircle2, Mail, KeyRound, Circle, WifiOff, TrendingUp, Eye, Trash2, Archive, RotateCcw } from 'lucide-react'
 import { canManageUser, type UserRole } from '@/lib/profile'
+import { useSiteSettings } from '@/lib/site-settings-context'
 import { isOnline, formatRelativeTime } from '@/lib/utils'
 import { UserGrowthChart } from '@/components/admin/user-growth-chart'
 import { UserContactHoverCard } from '@/components/admin/user-contact-hover-card'
@@ -29,6 +30,7 @@ interface Profile {
   is_active: boolean
   last_active_at: string | null
   first_active_at: string | null
+  deleted_at: string | null
   created_at: string | null
 }
 
@@ -62,7 +64,18 @@ export default function AdminUsersPage() {
   const [resetSaving, setResetSaving] = useState(false)
   const [sendingLinkFor, setSendingLinkFor] = useState<string | null>(null)
 
+  const [deleting, setDeleting] = useState<Profile | null>(null)
+
+  const [deletedModalOpen, setDeletedModalOpen] = useState(false)
+  const [deletedUsers, setDeletedUsers] = useState<Profile[]>([])
+  const [loadingDeleted, setLoadingDeleted] = useState(false)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
+
+  const { settings } = useSiteSettings()
+
   const supabase = createClient()
+
+  const PROFILE_COLUMNS = 'id, role, full_name, email, location, phone_number, farm_location, bio, avatar_url, is_active, last_active_at, first_active_at, deleted_at, created_at'
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -77,7 +90,8 @@ export default function AdminUsersPage() {
     setLoading(true)
     let query = supabase
       .from('profiles')
-      .select('id, role, full_name, email, location, phone_number, farm_location, bio, avatar_url, is_active, last_active_at, first_active_at, created_at')
+      .select(PROFILE_COLUMNS)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     // Admins manage farmers and other admins, but a super_admin row should
@@ -91,6 +105,37 @@ export default function AdminUsersPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  // Deleted accounts are only ever visible to super_admin — a plain admin
+  // never sees them exist at all, matching how they never see super_admin rows.
+  async function loadDeleted() {
+    setLoadingDeleted(true)
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(PROFILE_COLUMNS)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false })
+    if (error) toast.error(error.message)
+    else setDeletedUsers(data ?? [])
+    setLoadingDeleted(false)
+  }
+
+  function openDeletedModal() {
+    setDeletedModalOpen(true)
+    loadDeleted()
+  }
+
+  // What a plain admin may do to another user's account, per the toggles a
+  // super_admin sets in /admin/settings. super_admin is never limited by these.
+  const perms = viewerRole === 'super_admin'
+    ? { canEdit: true, canChangeRole: true, canToggleActive: true, canResetPassword: true, canDelete: true }
+    : {
+        canEdit: settings.adminCanEditUsers,
+        canChangeRole: settings.adminCanChangeRoles,
+        canToggleActive: settings.adminCanToggleActive,
+        canResetPassword: settings.adminCanResetPasswords,
+        canDelete: settings.adminCanDeleteUsers,
+      }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -188,6 +233,37 @@ export default function AdminUsersPage() {
     setDeactivating(null)
   }
 
+  // Soft delete: the row is never shown again in the normal list and login is
+  // blocked, but nothing is actually erased — kept for audit purposes. Only a
+  // super_admin can undo this (see loadDeleted/handleRestore below).
+  async function handleDelete() {
+    if (!deleting) return
+    setUpdatingId(deleting.id)
+    const { error } = await supabase.from('profiles').update({ deleted_at: new Date().toISOString() }).eq('id', deleting.id)
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success('Account deleted')
+      setUsers(prev => prev.filter(u => u.id !== deleting.id))
+      logUserAction('delete', deleting)
+    }
+    setUpdatingId(null)
+    setDeleting(null)
+  }
+
+  async function handleRestore(target: Profile) {
+    setRestoringId(target.id)
+    const { error } = await supabase.from('profiles').update({ deleted_at: null }).eq('id', target.id)
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success(`${target.full_name ?? target.email ?? 'Account'} restored`)
+      setDeletedUsers(prev => prev.filter(u => u.id !== target.id))
+      logUserAction('restore', target)
+    }
+    setRestoringId(null)
+  }
+
   async function handleSendResetLink(u: Profile) {
     if (!u.email) {
       toast.error('This user has no email on file')
@@ -252,14 +328,22 @@ export default function AdminUsersPage() {
             {viewerRole === 'super_admin' && ` · ${roleCount('super_admin')} super admins`}
           </p>
         </div>
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-          <Input
-            placeholder="Search by name, email, location..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input
+              placeholder="Search by name, email, location..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          {viewerRole === 'super_admin' && (
+            <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={openDeletedModal}>
+              <Archive className="h-3.5 w-3.5" />
+              Deleted
+            </Button>
+          )}
         </div>
       </div>
 
@@ -363,7 +447,7 @@ export default function AdminUsersPage() {
                     <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{user.phone_number ?? '—'}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>{user.location ?? '—'}</td>
                     <td className="px-4 py-3">
-                      {manageable ? (
+                      {manageable && perms.canChangeRole ? (
                         <select
                           value={user.role}
                           disabled={updatingId === user.id}
@@ -401,28 +485,33 @@ export default function AdminUsersPage() {
                         <button onClick={() => setViewingUser(user)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]" title="View details" style={{ color: 'var(--text-muted)' }}>
                           <Eye className="h-3.5 w-3.5" />
                         </button>
-                        {manageable && (
-                        <>
+                        {manageable && perms.canEdit && (
                           <button onClick={() => openEdit(user)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]" title="Edit details" style={{ color: 'var(--text-muted)' }}>
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
-                          <button
-                            onClick={() => handleSendResetLink(user)}
-                            disabled={sendingLinkFor === user.id || !user.email}
-                            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)] disabled:opacity-40"
-                            title={user.email ? 'Send password reset link' : 'No email on file'}
-                            style={{ color: 'var(--text-muted)' }}
-                          >
-                            <Mail className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => openResetPassword(user)}
-                            className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
-                            title="Set a new password directly"
-                            style={{ color: 'var(--text-muted)' }}
-                          >
-                            <KeyRound className="h-3.5 w-3.5" />
-                          </button>
+                        )}
+                        {manageable && perms.canResetPassword && (
+                          <>
+                            <button
+                              onClick={() => handleSendResetLink(user)}
+                              disabled={sendingLinkFor === user.id || !user.email}
+                              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)] disabled:opacity-40"
+                              title={user.email ? 'Send password reset link' : 'No email on file'}
+                              style={{ color: 'var(--text-muted)' }}
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => openResetPassword(user)}
+                              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
+                              title="Set a new password directly"
+                              style={{ color: 'var(--text-muted)' }}
+                            >
+                              <KeyRound className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
+                        {manageable && perms.canToggleActive && (
                           <button
                             onClick={() => setDeactivating(user)}
                             disabled={updatingId === user.id}
@@ -432,7 +521,17 @@ export default function AdminUsersPage() {
                           >
                             {user.is_active ? <Ban className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                           </button>
-                        </>
+                        )}
+                        {manageable && perms.canDelete && (
+                          <button
+                            onClick={() => setDeleting(user)}
+                            disabled={updatingId === user.id}
+                            className="p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Delete account"
+                            style={{ color: '#ef4444' }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
                         )}
                       </div>
                     </td>
@@ -507,19 +606,33 @@ export default function AdminUsersPage() {
 
             {canManage(viewingUser) && (
               <div className="flex flex-wrap gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openEdit(u) }}>
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
-                </Button>
-                <Button variant="outline" disabled={!viewingUser.email} onClick={() => handleSendResetLink(viewingUser)}>
-                  <Mail className="h-3.5 w-3.5 mr-1.5" /> Send reset link
-                </Button>
-                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openResetPassword(u) }}>
-                  <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Set password
-                </Button>
-                <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); setDeactivating(u) }}>
-                  {viewingUser.is_active ? <Ban className="h-3.5 w-3.5 mr-1.5" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />}
-                  {viewingUser.is_active ? 'Deactivate' : 'Activate'}
-                </Button>
+                {perms.canEdit && (
+                  <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openEdit(u) }}>
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+                  </Button>
+                )}
+                {perms.canResetPassword && (
+                  <>
+                    <Button variant="outline" disabled={!viewingUser.email} onClick={() => handleSendResetLink(viewingUser)}>
+                      <Mail className="h-3.5 w-3.5 mr-1.5" /> Send reset link
+                    </Button>
+                    <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); openResetPassword(u) }}>
+                      <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Set password
+                    </Button>
+                  </>
+                )}
+                {perms.canToggleActive && (
+                  <Button variant="outline" onClick={() => { const u = viewingUser; setViewingUser(null); setDeactivating(u) }}>
+                    {viewingUser.is_active ? <Ban className="h-3.5 w-3.5 mr-1.5" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />}
+                    {viewingUser.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                )}
+                {perms.canDelete && (
+                  <Button variant="outline" className="text-red-500 hover:text-red-500"
+                    onClick={() => { const u = viewingUser; setViewingUser(null); setDeleting(u) }}>
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -597,6 +710,51 @@ export default function AdminUsersPage() {
             : `${deactivating?.full_name ?? 'This user'} will be able to log in again.`
         }
       />
+
+      <ConfirmDialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        onConfirm={handleDelete}
+        loading={!!deleting && updatingId === deleting.id}
+        title="Delete Account"
+        confirmLabel="Delete"
+        description={
+          `${deleting?.full_name ?? 'This user'} will disappear from this list and be unable to log in. ` +
+          `Nothing is erased — only a super admin can restore the account later, from Deleted Accounts.`
+        }
+      />
+
+      {/* Deleted accounts — visible and restorable only by super_admin */}
+      <Modal open={deletedModalOpen} onClose={() => setDeletedModalOpen(false)} title="Deleted Accounts" maxWidth="max-w-2xl">
+        <div className="space-y-3">
+          {loadingDeleted ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <div key={i} className="h-14 rounded-lg shimmer" />)}
+            </div>
+          ) : deletedUsers.length === 0 ? (
+            <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>
+              No deleted accounts.
+            </p>
+          ) : (
+            deletedUsers.map(u => (
+              <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg p-3 border" style={{ borderColor: 'var(--border)' }}>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>{u.full_name ?? u.email ?? 'Unknown'}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    <Badge variant={ROLE_COLORS[u.role] ?? 'outline'}>{u.role}</Badge>
+                    {' '}· Deleted {u.deleted_at ? formatRelativeTime(u.deleted_at) : '—'}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="gap-1.5 shrink-0"
+                  disabled={restoringId === u.id} onClick={() => handleRestore(u)}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {restoringId === u.id ? 'Restoring...' : 'Restore'}
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

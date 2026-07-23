@@ -7,6 +7,8 @@ export type AuditAction =
   | 'profile_edit'
   | 'password_reset_direct'
   | 'password_reset_link'
+  | 'delete'
+  | 'restore'
 
 interface LogAuditActionParams {
   actorId: string
@@ -50,6 +52,10 @@ export function summarizeAuditDetails(action: AuditAction, details: Record<strin
       return 'Password set directly by admin'
     case 'password_reset_link':
       return 'Password reset link sent'
+    case 'delete':
+      return 'Account deleted (hidden, login blocked)'
+    case 'restore':
+      return 'Account restored'
     default:
       return 'Unknown action'
   }

@@ -26,6 +26,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'You are not allowed to manage this account' }, { status: 403 })
   }
 
+  // Plain admins can be switched off from resetting passwords via /admin/settings —
+  // super_admin is never subject to this toggle.
+  if (callerProfile.role === 'admin') {
+    const { data: siteSettings } = await supabase.from('site_settings').select('admin_can_reset_passwords').eq('id', 1).single()
+    if (siteSettings && siteSettings.admin_can_reset_passwords === false) {
+      return NextResponse.json({ error: 'Password resets are currently disabled for admins' }, { status: 403 })
+    }
+  }
+
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
     return NextResponse.json({ error: 'Server not configured for password resets (missing SUPABASE_SERVICE_ROLE_KEY)' }, { status: 500 })

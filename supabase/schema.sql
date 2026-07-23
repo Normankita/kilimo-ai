@@ -33,7 +33,8 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS avatar_url         text,
   ADD COLUMN IF NOT EXISTS is_active          boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS last_active_at     timestamptz,
-  ADD COLUMN IF NOT EXISTS first_active_at    timestamptz;
+  ADD COLUMN IF NOT EXISTS first_active_at    timestamptz,
+  ADD COLUMN IF NOT EXISTS deleted_at         timestamptz;
 
 -- Backfill profiles.email for any row left null (e.g. rows created directly in
 -- the SQL editor / dashboard rather than through the app's signup flow).
@@ -123,25 +124,88 @@ CREATE POLICY "profiles_update_privileged"
   ON public.profiles FOR UPDATE
   USING (get_my_role() IN ('admin', 'super_admin'));
 
--- Guard who can change `role` / `is_active`, regardless of which RLS policy
+-- Guard who can change `role` / `is_active` / `deleted_at` / the editable
+-- profile-detail fields on SOMEONE ELSE'S row, regardless of which RLS policy
 -- allowed the UPDATE through (closes the gap where profiles_update_own has
--- no column-level restriction).
+-- no column-level restriction). Also enforces the configurable per-action
+-- toggles in site_settings for plain admins — super_admin is never limited
+-- by those toggles, per the app's permission model.
 CREATE OR REPLACE FUNCTION public.guard_profile_privileged_fields()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  acting_role text := public.get_my_role();
+  is_self     boolean := (NEW.id = auth.uid());
+  settings    record;
+  details_changed boolean :=
+    NEW.full_name     IS DISTINCT FROM OLD.full_name OR
+    NEW.location      IS DISTINCT FROM OLD.location OR
+    NEW.phone_number   IS DISTINCT FROM OLD.phone_number OR
+    NEW.farm_location IS DISTINCT FROM OLD.farm_location OR
+    NEW.bio            IS DISTINCT FROM OLD.bio;
 BEGIN
-  IF (NEW.role IS DISTINCT FROM OLD.role) OR (NEW.is_active IS DISTINCT FROM OLD.is_active) THEN
-    IF NEW.id = auth.uid() THEN
-      RAISE EXCEPTION 'Cannot change your own role or active status';
-    ELSIF public.get_my_role() NOT IN ('admin', 'super_admin') THEN
-      RAISE EXCEPTION 'Not authorized to change role or active status';
-    ELSIF public.get_my_role() = 'admin' AND (OLD.role = 'super_admin' OR NEW.role = 'super_admin') THEN
-      RAISE EXCEPTION 'Admins may not manage or grant super admin access';
-    END IF;
+  -- Nobody may change their own role / active status / deletion status,
+  -- regardless of what role they hold (prevents self-lockout or self-escalation).
+  IF is_self AND (
+    NEW.role IS DISTINCT FROM OLD.role OR
+    NEW.is_active IS DISTINCT FROM OLD.is_active OR
+    NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
+  ) THEN
+    RAISE EXCEPTION 'Cannot change your own role, active status, or deletion status';
   END IF;
+
+  -- Editing your own profile details (name/location/phone/etc, e.g. via
+  -- /profile) is always allowed and never subject to the toggles below.
+  IF is_self THEN
+    RETURN NEW;
+  END IF;
+
+  -- From here, someone else's row is being modified — must be admin/super_admin.
+  IF acting_role NOT IN ('admin', 'super_admin') THEN
+    IF NEW.role IS DISTINCT FROM OLD.role OR NEW.is_active IS DISTINCT FROM OLD.is_active
+       OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at OR details_changed THEN
+      RAISE EXCEPTION 'Not authorized to modify this account';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  -- Admins may never touch a super_admin's row in any way.
+  IF acting_role = 'admin' AND (OLD.role = 'super_admin' OR NEW.role = 'super_admin') THEN
+    RAISE EXCEPTION 'Admins may not manage or grant super admin access';
+  END IF;
+
+  -- Restoring a soft-deleted account is super_admin only, regardless of toggles.
+  IF OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL AND acting_role <> 'super_admin' THEN
+    RAISE EXCEPTION 'Only a super admin can restore a deleted account';
+  END IF;
+
+  -- Super_admin is never limited by the configurable admin-permission toggles.
+  IF acting_role = 'super_admin' THEN
+    RETURN NEW;
+  END IF;
+
+  -- acting_role = 'admin' from here — enforce the configurable toggles.
+  SELECT * INTO settings FROM public.site_settings WHERE id = 1;
+
+  IF NEW.role IS DISTINCT FROM OLD.role AND NOT COALESCE(settings.admin_can_change_roles, true) THEN
+    RAISE EXCEPTION 'Role changes are currently disabled for admins';
+  END IF;
+
+  IF NEW.is_active IS DISTINCT FROM OLD.is_active AND NOT COALESCE(settings.admin_can_toggle_active, true) THEN
+    RAISE EXCEPTION 'Activating/deactivating accounts is currently disabled for admins';
+  END IF;
+
+  IF NEW.deleted_at IS DISTINCT FROM OLD.deleted_at AND NOT COALESCE(settings.admin_can_delete_users, true) THEN
+    RAISE EXCEPTION 'Deleting accounts is currently disabled for admins';
+  END IF;
+
+  IF details_changed AND NOT COALESCE(settings.admin_can_edit_users, true) THEN
+    RAISE EXCEPTION 'Editing user details is currently disabled for admins';
+  END IF;
+
   RETURN NEW;
 END;
 $$;
@@ -285,8 +349,29 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   email_login_enabled        boolean NOT NULL DEFAULT true,
   signups_enabled            boolean NOT NULL DEFAULT true,
   password_reset_enabled     boolean NOT NULL DEFAULT true,
+  -- Per-action toggles for what a plain admin may do to other users' accounts.
+  -- super_admin is never limited by these (enforced in guard_profile_privileged_fields).
+  admin_can_edit_users       boolean NOT NULL DEFAULT true,
+  admin_can_change_roles     boolean NOT NULL DEFAULT true,
+  admin_can_toggle_active    boolean NOT NULL DEFAULT true,
+  admin_can_reset_passwords  boolean NOT NULL DEFAULT true,
+  admin_can_delete_users     boolean NOT NULL DEFAULT true,
+  -- Unlike the toggles above (which restrict abilities admins already had),
+  -- this one is an opt-in grant of a capability admins never had — defaults
+  -- to false so a fresh install doesn't silently expose the audit trail.
+  admin_can_view_audit_log  boolean NOT NULL DEFAULT false,
   updated_at                 timestamptz NOT NULL DEFAULT now()
 );
+
+-- Add the permission-toggle columns if this table already existed from an
+-- earlier version of this file (safe to re-run).
+ALTER TABLE public.site_settings
+  ADD COLUMN IF NOT EXISTS admin_can_edit_users      boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_can_change_roles    boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_can_toggle_active   boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_can_reset_passwords boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_can_delete_users    boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS admin_can_view_audit_log  boolean NOT NULL DEFAULT false;
 
 INSERT INTO public.site_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
@@ -310,7 +395,8 @@ CREATE POLICY "site_settings_write"
 -- ── 4d. AUDIT LOG ────────────────────────────────────────────────────────────
 -- Append-only trail of critical admin actions on user accounts (role changes,
 -- activate/deactivate, password resets, profile edits). Written by admins and
--- super_admins as themselves; readable only by super_admin.
+-- super_admins as themselves; readable by super_admin always, and by a plain
+-- admin only when granted via the admin_can_view_audit_log toggle.
 
 CREATE TABLE IF NOT EXISTS public.audit_logs (
   id          bigserial PRIMARY KEY,
@@ -336,10 +422,17 @@ CREATE POLICY "audit_logs_insert"
   ON public.audit_logs FOR INSERT
   WITH CHECK (get_my_role() IN ('admin', 'super_admin') AND actor_id = auth.uid());
 
--- Only super_admin may read the trail
+-- super_admin always reads the trail; a plain admin only if a super_admin has
+-- explicitly granted it via the admin_can_view_audit_log toggle in site_settings.
 CREATE POLICY "audit_logs_select"
   ON public.audit_logs FOR SELECT
-  USING (get_my_role() = 'super_admin');
+  USING (
+    get_my_role() = 'super_admin'
+    OR (
+      get_my_role() = 'admin'
+      AND EXISTS (SELECT 1 FROM public.site_settings WHERE id = 1 AND admin_can_view_audit_log = true)
+    )
+  );
 
 
 -- ── 5. AI CONVERSATIONS ─────────────────────────────────────────────────────

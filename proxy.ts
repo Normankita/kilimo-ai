@@ -41,11 +41,13 @@ export default async function proxy(request: NextRequest) {
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, is_active')
+      .select('role, is_active, deleted_at')
       .eq('id', user.id)
       .single()
 
-    if (profile?.is_active === false) {
+    // A deleted account is blocked exactly like a deactivated one — it just
+    // can't be undone by an admin, only by a super_admin from Deleted Accounts.
+    if (profile?.is_active === false || profile?.deleted_at) {
       await supabase.auth.signOut()
       if (!isAuthPage) {
         const url = new URL('/login', request.url)
