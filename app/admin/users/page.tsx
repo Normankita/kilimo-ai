@@ -16,6 +16,8 @@ import { isOnline, formatRelativeTime } from '@/lib/utils'
 import { UserGrowthChart } from '@/components/admin/user-growth-chart'
 import { UserContactHoverCard } from '@/components/admin/user-contact-hover-card'
 import { logAuditAction } from '@/lib/audit-log'
+import { SortableTh } from '@/components/admin/sortable-th'
+import { useSort } from '@/lib/use-sort'
 
 interface Profile {
   id: string
@@ -146,6 +148,15 @@ export default function AdminUsersPage() {
       (u.location ?? '').toLowerCase().includes(q)
     )
   }, [users, search])
+
+  type SortKey = 'full_name' | 'email' | 'location' | 'role' | 'last_active_at' | 'created_at'
+  const { sortKey, sortDir, toggleSort, sorted } = useSort<Profile, SortKey>(filtered, 'created_at', (u, key) => {
+    if (key === 'last_active_at' || key === 'created_at') {
+      const v = u[key]
+      return v ? new Date(v).getTime() : 0
+    }
+    return (u[key] ?? '').toLowerCase()
+  }, 'desc')
 
   const roleCount = (role: string) => users.filter(u => u.role === role).length
 
@@ -399,9 +410,14 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Name', 'Email', 'Phone', 'Location', 'Role', 'Status', 'Joined', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                ))}
+                <SortableTh label="Name" sortKey="full_name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Email" sortKey="email" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Phone</th>
+                <SortableTh label="Location" sortKey="location" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Role" sortKey="role" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Status" sortKey="last_active_at" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Joined" sortKey="created_at" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -409,13 +425,13 @@ export default function AdminUsersPage() {
                 [...Array(6)].map((_, i) => (
                   <tr key={i}><td colSpan={8} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     No users found.
                   </td>
                 </tr>
-              ) : filtered.map(user => {
+              ) : sorted.map(user => {
                 const isSelf = user.id === currentUserId
                 const manageable = canManage(user)
                 const online = isOnline(user.last_active_at)

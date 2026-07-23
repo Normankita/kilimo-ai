@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Droplets, Calendar, Bug, BarChart3, Thermometer, Lightbulb, Leaf } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Droplets, Calendar, Bug, BarChart3, Thermometer, Lightbulb, Leaf, Search } from 'lucide-react'
 
 interface CropInfo {
   id: number
@@ -35,10 +36,14 @@ const cardVariants = {
   }),
 }
 
+type SortOption = 'name_asc' | 'name_desc'
+
 export default function CropsPage() {
   const { t, lang } = useLanguage()
   const [crops, setCrops] = useState<CropInfo[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<SortOption>('name_asc')
 
   useEffect(() => {
     const supabase = createClient()
@@ -50,12 +55,46 @@ export default function CropsPage() {
     load()
   }, [])
 
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const filtered = q
+      ? crops.filter(c => c.name.toLowerCase().includes(q) || (c.name_en ?? '').toLowerCase().includes(q))
+      : crops
+    const displayName = (c: CropInfo) => (lang === 'sw' ? c.name : (c.name_en ?? c.name))
+    return [...filtered].sort((a, b) => {
+      const cmp = displayName(a).localeCompare(displayName(b))
+      return sort === 'name_asc' ? cmp : -cmp
+    })
+  }, [crops, search, sort, lang])
+
   return (
     <div className="space-y-5">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{t.crops.title}</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t.crops.subtitle}</p>
       </motion.div>
+
+      {crops.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input
+              placeholder={lang === 'sw' ? 'Tafuta zao...' : 'Search crops...'}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            className="h-10 rounded-lg border px-3 text-sm shrink-0"
+            style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}>
+            <option value="name_asc">{lang === 'sw' ? 'Jina A–Z' : 'Name A–Z'}</option>
+            <option value="name_desc">{lang === 'sw' ? 'Jina Z–A' : 'Name Z–A'}</option>
+          </select>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -72,9 +111,18 @@ export default function CropsPage() {
             </p>
           </CardContent>
         </Card>
+      ) : visible.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 flex flex-col items-center text-center gap-2">
+            <Search className="h-8 w-8" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              {lang === 'sw' ? 'Hakuna zao linalolingana na utafutaji.' : 'No crops match your search.'}
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-          {crops.map((crop, i) => (
+          {visible.map((crop, i) => (
             <motion.div
               key={crop.id}
               custom={i}

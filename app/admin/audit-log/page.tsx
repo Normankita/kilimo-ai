@@ -11,6 +11,8 @@ import { Modal } from '@/components/ui/modal'
 import { ScrollText, Search } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils'
 import { summarizeAuditDetails, type AuditAction } from '@/lib/audit-log'
+import { SortableTh } from '@/components/admin/sortable-th'
+import { useSort } from '@/lib/use-sort'
 
 interface AuditLogEntry {
   id: number
@@ -110,6 +112,12 @@ export default function AuditLogPage() {
     })
   }, [entries, search, actionFilter])
 
+  type SortKey = 'created_at' | 'actor_name' | 'action' | 'target_name'
+  const { sortKey, sortDir, toggleSort, sorted } = useSort<AuditLogEntry, SortKey>(filtered, 'created_at', (e, key) => {
+    if (key === 'created_at') return new Date(e[key]).getTime()
+    return (e[key] ?? '').toLowerCase()
+  }, 'desc')
+
   if (checking) return null
   if (!authorized) return null
 
@@ -166,7 +174,12 @@ export default function AuditLogPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Time', 'Actor', 'Action', 'Target', 'Summary', ...(detailed ? ['Actor role', 'Target ID'] : [])].map(h => (
+                <SortableTh label="Time" sortKey="created_at" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Actor" sortKey="actor_name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Action" sortKey="action" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Target" sortKey="target_name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="text-left px-4 py-3 text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>Summary</th>
+                {detailed && ['Actor role', 'Target ID'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{h}</th>
                 ))}
               </tr>
@@ -176,13 +189,13 @@ export default function AuditLogPage() {
                 [...Array(6)].map((_, i) => (
                   <tr key={i}><td colSpan={detailed ? 7 : 5} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <tr>
                   <td colSpan={detailed ? 7 : 5} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     No actions recorded yet.
                   </td>
                 </tr>
-              ) : filtered.map(entry => (
+              ) : sorted.map(entry => (
                 <tr
                   key={entry.id}
                   onClick={() => setViewing(entry)}

@@ -1,44 +1,26 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, MapPin, Info, Lightbulb } from 'lucide-react'
-
-const SEED = [
-  { crop_name: 'Mahindi',   price_per_kg: 650,  market_location: 'Dar es Salaam', recorded_date: '2026-05-20' },
-  { crop_name: 'Mahindi',   price_per_kg: 600,  market_location: 'Dodoma',         recorded_date: '2026-05-20' },
-  { crop_name: 'Mahindi',   price_per_kg: 580,  market_location: 'Mbeya',          recorded_date: '2026-05-20' },
-  { crop_name: 'Mahindi',   price_per_kg: 620,  market_location: 'Arusha',         recorded_date: '2026-05-20' },
-  { crop_name: 'Mchele',    price_per_kg: 1800, market_location: 'Dar es Salaam', recorded_date: '2026-05-20' },
-  { crop_name: 'Mchele',    price_per_kg: 1650, market_location: 'Dodoma',         recorded_date: '2026-05-20' },
-  { crop_name: 'Mchele',    price_per_kg: 1700, market_location: 'Arusha',         recorded_date: '2026-05-20' },
-  { crop_name: 'Mchele',    price_per_kg: 1600, market_location: 'Mbeya',          recorded_date: '2026-05-20' },
-  { crop_name: 'Nyanya',    price_per_kg: 800,  market_location: 'Dar es Salaam', recorded_date: '2026-05-20' },
-  { crop_name: 'Nyanya',    price_per_kg: 650,  market_location: 'Dodoma',         recorded_date: '2026-05-20' },
-  { crop_name: 'Nyanya',    price_per_kg: 750,  market_location: 'Arusha',         recorded_date: '2026-05-20' },
-  { crop_name: 'Nyanya',    price_per_kg: 600,  market_location: 'Mbeya',          recorded_date: '2026-05-20' },
-  { crop_name: 'Maharage',  price_per_kg: 1400, market_location: 'Dar es Salaam', recorded_date: '2026-05-20' },
-  { crop_name: 'Maharage',  price_per_kg: 1300, market_location: 'Dodoma',         recorded_date: '2026-05-20' },
-  { crop_name: 'Maharage',  price_per_kg: 1350, market_location: 'Arusha',         recorded_date: '2026-05-20' },
-  { crop_name: 'Maharage',  price_per_kg: 1250, market_location: 'Mbeya',          recorded_date: '2026-05-20' },
-  { crop_name: 'Vitunguu',  price_per_kg: 500,  market_location: 'Dar es Salaam', recorded_date: '2026-05-20' },
-  { crop_name: 'Vitunguu',  price_per_kg: 450,  market_location: 'Dodoma',         recorded_date: '2026-05-20' },
-  { crop_name: 'Vitunguu',  price_per_kg: 480,  market_location: 'Arusha',         recorded_date: '2026-05-20' },
-  { crop_name: 'Vitunguu',  price_per_kg: 420,  market_location: 'Mbeya',          recorded_date: '2026-05-20' },
-]
+import { Input } from '@/components/ui/input'
+import { TrendingUp, MapPin, Info, Lightbulb, Search } from 'lucide-react'
 
 const EMOJIS: Record<string, string> = { Mahindi: '🌽', Mchele: '🌾', Nyanya: '🍅', Maharage: '🫘', Vitunguu: '🧅' }
 const LOCATIONS = ['Dar es Salaam', 'Dodoma', 'Arusha', 'Mbeya']
 
 type PriceRow = { crop_name: string; price_per_kg: number; market_location: string; recorded_date: string }
+type SortOption = 'name_asc' | 'name_desc' | 'price_desc' | 'price_asc'
 
 export default function MarketPage() {
   const { t } = useLanguage()
-  const [data, setData] = useState<PriceRow[]>(SEED)
+  const [data, setData] = useState<PriceRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<SortOption>('name_asc')
 
   useEffect(() => {
     const supabase = createClient()
@@ -46,14 +28,27 @@ export default function MarketPage() {
       .from('market_prices')
       .select('*')
       .order('recorded_date', { ascending: false })
-      .then(({ data }) => { if (data?.length) setData(data) })
+      .then(({ data }) => { setData(data ?? []); setLoading(false) })
   }, [])
 
-  const grouped = data.reduce((acc: Record<string, PriceRow[]>, item) => {
-    if (!acc[item.crop_name]) acc[item.crop_name] = []
-    acc[item.crop_name].push(item)
-    return acc
-  }, {})
+  const grouped = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const filtered = q ? data.filter(d => d.crop_name.toLowerCase().includes(q)) : data
+    const groups = filtered.reduce((acc: Record<string, PriceRow[]>, item) => {
+      if (!acc[item.crop_name]) acc[item.crop_name] = []
+      acc[item.crop_name].push(item)
+      return acc
+    }, {})
+    const entries = Object.entries(groups)
+    entries.sort(([cropA, itemsA], [cropB, itemsB]) => {
+      if (sort === 'name_asc') return cropA.localeCompare(cropB)
+      if (sort === 'name_desc') return cropB.localeCompare(cropA)
+      const maxA = Math.max(...itemsA.map(i => i.price_per_kg))
+      const maxB = Math.max(...itemsB.map(i => i.price_per_kg))
+      return sort === 'price_desc' ? maxB - maxA : maxA - maxB
+    })
+    return entries
+  }, [data, search, sort])
 
   return (
     <div className="space-y-5">
@@ -85,9 +80,54 @@ export default function MarketPage() {
         ))}
       </div>
 
+      {!loading && data.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input
+              placeholder="Search crop..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            className="h-10 rounded-lg border px-3 text-sm shrink-0"
+            style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}>
+            <option value="name_asc">Name A–Z</option>
+            <option value="name_desc">Name Z–A</option>
+            <option value="price_desc">Highest price</option>
+            <option value="price_asc">Lowest price</option>
+          </select>
+        </div>
+      )}
+
       {/* Crop cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-40 rounded-xl shimmer" />
+          ))}
+        </div>
+      ) : data.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 flex flex-col items-center text-center gap-2">
+            <TrendingUp className="h-8 w-8" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No market prices recorded yet.</p>
+          </CardContent>
+        </Card>
+      ) : grouped.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 flex flex-col items-center text-center gap-2">
+            <Search className="h-8 w-8" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No crops match your search.</p>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        {Object.entries(grouped).map(([crop, items], ci) => {
+        {grouped.map(([crop, items], ci) => {
           const prices = items.map(i => i.price_per_kg)
           const maxP = Math.max(...prices)
           const minP = Math.min(...prices)
@@ -153,6 +193,7 @@ export default function MarketPage() {
           )
         })}
       </div>
+      )}
 
       {/* Tip */}
       <motion.div

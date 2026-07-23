@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/lib/language-context'
 import { Badge } from '@/components/ui/badge'
-import { PlayCircle, ExternalLink, BookOpen } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { PlayCircle, ExternalLink, BookOpen, Search } from 'lucide-react'
 
 interface VideoItem {
   id: number
@@ -33,6 +34,7 @@ export default function LearnPage() {
   const [content, setContent] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const supabase = createClient()
@@ -46,9 +48,14 @@ export default function LearnPage() {
       })
   }, [])
 
-  const filtered = activeCategory === 'all'
-    ? content
-    : content.filter(v => v.category === activeCategory)
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return content.filter(v => {
+      if (activeCategory !== 'all' && v.category !== activeCategory) return false
+      if (!q) return true
+      return v.title.toLowerCase().includes(q) || v.description.toLowerCase().includes(q) || v.crop_name.toLowerCase().includes(q)
+    })
+  }, [content, activeCategory, search])
 
   return (
     <div className="space-y-5">
@@ -78,6 +85,18 @@ export default function LearnPage() {
           )
         })}
       </div>
+
+      {content.length > 0 && (
+        <div className="relative sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+          <Input
+            placeholder={lang === 'sw' ? 'Tafuta video...' : 'Search videos...'}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      )}
 
       {/* Grid */}
       {loading ? (
@@ -165,7 +184,11 @@ export default function LearnPage() {
       {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
           <BookOpen className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--border)' }} />
-          <p style={{ color: 'var(--text-muted)' }}>{t.learn.noContent}</p>
+          <p style={{ color: 'var(--text-muted)' }}>
+            {content.length === 0
+              ? t.learn.noContent
+              : (lang === 'sw' ? 'Hakuna video zinazolingana.' : 'No videos match your search.')}
+          </p>
         </div>
       )}
     </div>

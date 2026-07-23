@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Plus, Pencil, Trash2, ImagePlus, Leaf } from 'lucide-react'
+import { Plus, Pencil, Trash2, ImagePlus, Leaf, Search } from 'lucide-react'
+import { SortableTh } from '@/components/admin/sortable-th'
+import { useSort } from '@/lib/use-sort'
 
 interface CropInfo {
   id: number
@@ -35,6 +37,8 @@ const BLANK: Omit<CropInfo, 'id'> = {
   diseases: [], tips_sw: '', tips_en: '', accent_color: '#2a5c3f', image_url: null,
 }
 
+type SortKey = 'name' | 'name_en' | 'season_sw' | 'temperature'
+
 export default function AdminCropsPage() {
   const [crops, setCrops] = useState<CropInfo[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,6 +51,7 @@ export default function AdminCropsPage() {
   const [diseasesInput, setDiseasesInput] = useState('')
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [search, setSearch] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const supabase = createClient()
@@ -77,6 +82,16 @@ export default function AdminCropsPage() {
     setCrops(data ?? [])
     setLoading(false)
   }
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return crops
+    return crops.filter(c =>
+      c.name.toLowerCase().includes(q) || (c.name_en ?? '').toLowerCase().includes(q)
+    )
+  }, [crops, search])
+
+  const { sortKey, sortDir, toggleSort, sorted } = useSort<CropInfo, SortKey>(filtered, 'name', (c, key) => c[key] ?? '')
 
   useEffect(() => { load() }, [])
 
@@ -137,12 +152,18 @@ export default function AdminCropsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Crop Information</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{crops.length} crops</p>
         </div>
-        <Button onClick={openAdd} size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Add Crop</Button>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input placeholder="Search crop name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Button onClick={openAdd} size="sm" className="gap-1.5 shrink-0"><Plus className="h-4 w-4" /> Add Crop</Button>
+        </div>
       </div>
 
       <Card>
@@ -150,9 +171,12 @@ export default function AdminCropsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['', 'Name (SW)', 'Name (EN)', 'Season', 'Temperature', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                ))}
+                <th className="px-4 py-3" />
+                <SortableTh label="Name (SW)" sortKey="name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Name (EN)" sortKey="name_en" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Season" sortKey="season_sw" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Temperature" sortKey="temperature" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -160,13 +184,13 @@ export default function AdminCropsPage() {
                 [...Array(5)].map((_, i) => (
                   <tr key={i}><td colSpan={6} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
-              ) : crops.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-                    No crops yet. Run the seed SQL or click "Add Crop".
+                    {search ? 'No crops match your search.' : 'No crops yet. Run the seed SQL or click "Add Crop".'}
                   </td>
                 </tr>
-              ) : crops.map(crop => (
+              ) : sorted.map(crop => (
                 <tr key={crop.id} style={{ borderBottom: '1px solid var(--border)' }}
                   className="transition-colors hover:bg-[var(--surface-2)]">
                   <td className="px-4 py-3">

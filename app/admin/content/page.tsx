@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Pencil, Trash2, ExternalLink, Search } from 'lucide-react'
+import { SortableTh } from '@/components/admin/sortable-th'
+import { useSort } from '@/lib/use-sort'
 
 interface Content {
   id: number
@@ -31,6 +33,8 @@ const CAT_COLORS: Record<string, string> = {
   kupanda: 'success', umwagiliaji: 'secondary', magonjwa: 'destructive',
 }
 
+type SortKey = 'title' | 'category' | 'crop_name' | 'language'
+
 export default function AdminContentPage() {
   const [items, setItems] = useState<Content[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,6 +45,7 @@ export default function AdminContentPage() {
   const [editing, setEditing] = useState<Content | null>(null)
   const [form, setForm] = useState(BLANK)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
 
   const supabase = createClient()
 
@@ -52,6 +57,16 @@ export default function AdminContentPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return items
+    return items.filter(i =>
+      i.title.toLowerCase().includes(q) || i.crop_name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)
+    )
+  }, [items, search])
+
+  const { sortKey, sortDir, toggleSort, sorted } = useSort<Content, SortKey>(filtered, 'title', (i, key) => i[key])
 
   function openAdd() { setEditing(null); setForm(BLANK); setModal(true) }
   function openEdit(item: Content) { setEditing(item); setForm({ title: item.title, description: item.description, video_url: item.video_url, category: item.category, crop_name: item.crop_name, language: item.language }); setModal(true) }
@@ -85,14 +100,20 @@ export default function AdminContentPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Educational Content</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{items.length} videos</p>
         </div>
-        <Button onClick={openAdd} size="sm" className="gap-1.5">
-          <Plus className="h-4 w-4" /> Add Video
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input placeholder="Search title, crop, category..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Button onClick={openAdd} size="sm" className="gap-1.5 shrink-0">
+            <Plus className="h-4 w-4" /> Add Video
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -100,9 +121,11 @@ export default function AdminContentPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Title', 'Category', 'Crop', 'Language', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                ))}
+                <SortableTh label="Title" sortKey="title" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Category" sortKey="category" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Crop" sortKey="crop_name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Language" sortKey="language" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -110,9 +133,11 @@ export default function AdminContentPage() {
                 [...Array(4)].map((_, i) => (
                   <tr key={i}><td colSpan={5} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
-              ) : items.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>No videos yet.</td></tr>
-              ) : items.map(item => (
+              ) : sorted.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {search ? 'No videos match your search.' : 'No videos yet.'}
+                </td></tr>
+              ) : sorted.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}
                   className="transition-colors hover:bg-[var(--surface-2)]">
                   <td className="px-4 py-3">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { SortableTh } from '@/components/admin/sortable-th'
+import { useSort } from '@/lib/use-sort'
 
 interface Price {
   id: number
@@ -25,6 +27,8 @@ const BLANK: Omit<Price, 'id'> = {
 const LOCATIONS = ['Dar es Salaam', 'Dodoma', 'Arusha', 'Mbeya', 'Mwanza', 'Morogoro']
 const CROPS = ['Mahindi', 'Mchele', 'Nyanya', 'Maharage', 'Vitunguu', 'Karoti', 'Ndizi']
 
+type SortKey = 'crop_name' | 'price_per_kg' | 'market_location' | 'recorded_date'
+
 export default function AdminMarketPage() {
   const [prices, setPrices] = useState<Price[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,6 +39,7 @@ export default function AdminMarketPage() {
   const [editing, setEditing] = useState<Price | null>(null)
   const [form, setForm] = useState(BLANK)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
 
   const supabase = createClient()
 
@@ -46,6 +51,16 @@ export default function AdminMarketPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return prices
+    return prices.filter(p =>
+      p.crop_name.toLowerCase().includes(q) || p.market_location.toLowerCase().includes(q)
+    )
+  }, [prices, search])
+
+  const { sortKey, sortDir, toggleSort, sorted } = useSort<Price, SortKey>(filtered, 'recorded_date', (p, key) => p[key], 'desc')
 
   function openAdd() { setEditing(null); setForm(BLANK); setModal(true) }
   function openEdit(p: Price) { setEditing(p); setForm({ crop_name: p.crop_name, price_per_kg: p.price_per_kg, market_location: p.market_location, recorded_date: p.recorded_date }); setModal(true) }
@@ -84,14 +99,20 @@ export default function AdminMarketPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Market Prices</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{prices.length} entries</p>
         </div>
-        <Button onClick={openAdd} size="sm" className="gap-1.5">
-          <Plus className="h-4 w-4" /> Add Price
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+            <Input placeholder="Search crop or location..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Button onClick={openAdd} size="sm" className="gap-1.5 shrink-0">
+            <Plus className="h-4 w-4" /> Add Price
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -99,9 +120,11 @@ export default function AdminMarketPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Crop', 'Price (TZS/kg)', 'Location', 'Date', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                ))}
+                <SortableTh label="Crop" sortKey="crop_name" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Price (TZS/kg)" sortKey="price_per_kg" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Location" sortKey="market_location" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <SortableTh label="Date" sortKey="recorded_date" activeKey={sortKey} direction={sortDir} onClick={toggleSort} />
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -109,9 +132,11 @@ export default function AdminMarketPage() {
                 [...Array(5)].map((_, i) => (
                   <tr key={i}><td colSpan={5} className="px-4 py-2.5"><div className="h-6 rounded shimmer" /></td></tr>
                 ))
-              ) : prices.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>No prices yet. Click "Add Price" to start.</td></tr>
-              ) : prices.map(p => (
+              ) : sorted.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {search ? 'No prices match your search.' : 'No prices yet. Click "Add Price" to start.'}
+                </td></tr>
+              ) : sorted.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}
                   className="transition-colors hover:bg-[var(--surface-2)]">
                   <td className="px-4 py-3 font-medium" style={{ color: 'var(--text)' }}>{p.crop_name}</td>
