@@ -27,7 +27,7 @@ export interface SiteSettings {
 // Mirrors the defaults in supabase/schema.sql's site_settings table, so the
 // app looks and behaves the same before that migration has ever run.
 const DEFAULT_SETTINGS: SiteSettings = {
-  appName: 'Kilimo AI',
+  appName: 'NorZah Kilimo Smart assist',
   logoUrl: null,
   accentColor: '#2a5c3f',
   heroSlideshowIntervalMs: 5000,

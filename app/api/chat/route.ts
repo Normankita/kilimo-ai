@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, lang } = await request.json()
 
-    let appName = 'Kilimo AI'
+    let appName = 'NorZah Kilimo Smart assist'
     try {
       const supabase = await createClient()
       const { data } = await supabase.from('site_settings').select('app_name').eq('id', 1).single()

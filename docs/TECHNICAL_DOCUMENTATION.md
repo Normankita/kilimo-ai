@@ -1,8 +1,8 @@
-# Kilimo AI, Technical Documentation
+# NorZah Kilimo Smart assist, Technical Documentation
 
 > **Version:** 1.0  
 > **Date:** May 2026  
-> **Project:** Kilimo AI, Smart Agriculture Platform  
+> **Project:** NorZah Kilimo Smart assist, Smart Agriculture Platform  
 > **Classification:** Final Year University Project, Technical Reference  
 > **Document Type:** Software Architecture & API Reference
 
@@ -27,7 +27,7 @@
 
 ### Purpose and Scope
 
-Kilimo AI is a full-stack Progressive Web Application (PWA) designed to deliver agricultural intelligence to Tanzanian smallholder farmers. The system addresses a critical gap in the agricultural sector: the lack of accessible, timely, and locally-contextualised farming guidance in the Kiswahili language.
+NorZah Kilimo Smart assist is a full-stack Progressive Web Application (PWA) designed to deliver agricultural intelligence to Tanzanian smallholder farmers. The system addresses a critical gap in the agricultural sector: the lack of accessible, timely, and locally-contextualised farming guidance in the Kiswahili language.
 
 The platform integrates three data streams, AI-driven conversational assistance, real-time meteorological data, and administratively-managed market price data, into a unified, mobile-first interface that can be installed on any smartphone without an App Store.
 
@@ -59,7 +59,7 @@ The platform integrates three data streams, AI-driven conversational assistance,
 
 ### System Architecture Description
 
-Kilimo AI is built on a **client-server model** using the Next.js App Router paradigm with a clear separation between the frontend (React components), backend logic (Next.js API routes and Server Components), and external data services.
+NorZah Kilimo Smart assist is built on a **client-server model** using the Next.js App Router paradigm with a clear separation between the frontend (React components), backend logic (Next.js API routes and Server Components), and external data services.
 
 The architecture follows a **three-tier design**:
 
@@ -300,7 +300,7 @@ This model is Groq's fastest inference option, optimised for low-latency convers
 The AI's behaviour is constrained by a static system prompt injected at the beginning of every request:
 
 ```
-You are Kilimo AI, an agricultural assistant for Tanzanian smallholder farmers.
+You are NorZah Kilimo Smart assist, an agricultural assistant for Tanzanian smallholder farmers.
 Always respond in Kiswahili unless the user writes in English.
 Focus only on farming topics: crops, weather, diseases, irrigation, pest control, soil health, and market advice.
 Be simple, friendly, and practical. Avoid technical jargon.
@@ -415,7 +415,7 @@ Supabase is the core Backend-as-a-Service powering authentication, the database,
 
 #### Auth Flow
 
-Kilimo AI uses the `@supabase/ssr` package which handles session persistence via HTTP-only cookies, ensuring tokens are never accessible to JavaScript (protection against XSS attacks).
+NorZah Kilimo Smart assist uses the `@supabase/ssr` package which handles session persistence via HTTP-only cookies, ensuring tokens are never accessible to JavaScript (protection against XSS attacks).
 
 **Client initialisation (browser):**
 ```typescript
@@ -574,8 +574,8 @@ The Web App Manifest is located at `/public/manifest.json`:
 
 ```json
 {
-  "name": "Kilimo AI - Msaada wa Kilimo",
-  "short_name": "Kilimo AI",
+  "name": "NorZah Kilimo Smart assist - Msaada wa Kilimo",
+  "short_name": "NorZah Kilimo Smart assist",
   "description": "Mfumo wa akili ya bandia kwa wakulima wa Tanzania",
   "start_url": "/",
   "display": "standalone",
@@ -688,7 +688,7 @@ Before going live, verify the following in the Supabase dashboard:
 | ✅ RLS enabled | Verify all tables have RLS enabled under Table Editor |
 | ✅ Google OAuth configured | Enable Google provider in Authentication → Providers, add Google Client ID and Secret |
 | ✅ Storage bucket created | Create an `avatars` bucket with public read access |
-| ✅ Email templates customised | Update confirmation and password reset emails with Kilimo AI branding |
+| ✅ Email templates customised | Update confirmation and password reset emails with NorZah Kilimo Smart assist branding |
 | ✅ Site URL set | Match to deployed Vercel URL |
 | ✅ Redirect URL whitelisted | Add `/auth/callback` to allowed redirect URLs |
 | ✅ Rate limiting reviewed | Default Supabase rate limits are sufficient for initial deployment |
@@ -814,7 +814,7 @@ Add a community Q&A board where:
 
 ---
 
-*Technical Documentation prepared May 2026 for Kilimo AI v1.0*  
+*Technical Documentation prepared May 2026 for NorZah Kilimo Smart assist v1.0*  
 *Stack: Next.js 16 · React 19 · TypeScript 5 · Supabase · Groq API · OpenWeatherMap · Tailwind CSS v4 · Framer Motion*
 
-*© 2026 Kilimo AI, University Final Year Project*
+*© 2026 NorZah Kilimo Smart assist, University Final Year Project*

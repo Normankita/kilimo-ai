@@ -1,4 +1,4 @@
-# Kilimo AI
+# NorZah Kilimo Smart assist
 
 A smart agriculture assistant built for Tanzanian smallholder farmers. Get AI-powered farming advice, live market prices, weather forecasts, and educational content — all in Swahili and English, completely free.
 
@@ -111,4 +111,4 @@ npm run lint     # Run ESLint
 
 ## License
 
-© 2026 Kilimo AI. All rights reserved.
+© 2026 NorZah Kilimo Smart assist. All rights reserved.

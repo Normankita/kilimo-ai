@@ -8,7 +8,7 @@ const TOUR_KEY = 'kilimo_tour_completed'
 const STEPS = [
   {
     popover: {
-      title: 'Karibu Kilimo AI! 🌱',
+      title: 'Karibu NorZah Kilimo Smart assist! 🌱',
       description: 'Hebu tukuonyeshe jinsi ya kutumia mfumo huu. Itachukua sekunde 30 tu.',
     },
   },
@@ -53,7 +53,7 @@ const STEPS = [
     popover: {
       title: 'Uko Tayari! 🎉',
       description:
-        'Sasa unajua jinsi ya kutumia Kilimo AI. Anza kwa kuuliza AI swali lako la kwanza la kilimo.',
+        'Sasa unajua jinsi ya kutumia NorZah Kilimo Smart assist. Anza kwa kuuliza AI swali lako la kwanza la kilimo.',
       doneBtnText: 'Anza Sasa →',
     },
   },

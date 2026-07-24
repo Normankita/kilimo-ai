@@ -62,7 +62,7 @@ export default function InstallPrompt() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-tight">Sakinisha Kilimo AI</p>
+              <p className="text-sm font-semibold leading-tight">Sakinisha NorZah Kilimo Smart assist</p>
               <p className="text-xs text-white/70 mt-0.5 leading-tight">Pakua kwenye simu yako bila malipo</p>
             </div>
 

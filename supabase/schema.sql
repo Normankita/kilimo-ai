@@ -341,7 +341,7 @@ CREATE POLICY "branding_images_write"
 
 CREATE TABLE IF NOT EXISTS public.site_settings (
   id                         int PRIMARY KEY DEFAULT 1 CHECK (id = 1), -- enforces a single row
-  app_name                   text NOT NULL DEFAULT 'Kilimo AI',
+  app_name                   text NOT NULL DEFAULT 'NorZah Kilimo Smart assist',
   logo_url                   text,
   accent_color               text NOT NULL DEFAULT '#2a5c3f',
   hero_slideshow_interval_ms int NOT NULL DEFAULT 5000,

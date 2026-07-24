@@ -215,7 +215,7 @@ export default function AdminBrandingPage() {
 
           <div className="space-y-1.5">
             <Label>Caption (optional)</Label>
-            <Input value={form.caption ?? ''} onChange={e => setForm(f => ({ ...f, caption: e.target.value }))} placeholder="e.g. A farmer in Dodoma using Kilimo AI" />
+            <Input value={form.caption ?? ''} onChange={e => setForm(f => ({ ...f, caption: e.target.value }))} placeholder="e.g. A farmer in Dodoma using NorZah Kilimo Smart assist" />
           </div>
 
           <div className="flex gap-3 pt-2">

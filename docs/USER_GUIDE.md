@@ -1,8 +1,8 @@
-# Kilimo AI, Mwongozo wa Mtumiaji / User Guide
+# NorZah Kilimo Smart assist, Mwongozo wa Mtumiaji / User Guide
 
 > **Toleo / Version:** 1.0  
 > **Tarehe / Date:** Mei 2026  
-> **Mradi / Project:** Kilimo AI, Smart Agriculture Platform  
+> **Mradi / Project:** NorZah Kilimo Smart assist, Smart Agriculture Platform  
 > **Taasisi / Institution:** University Final Year Project
 
 ---
@@ -28,21 +28,21 @@
 
 **Introduction**
 
-Kilimo AI is an intelligent agricultural assistance platform purpose-built for Tanzanian smallholder farmers. It combines artificial intelligence, real-time weather data, and current market price information into a single, easy-to-use web application accessible from any smartphone or computer.
+NorZah Kilimo Smart assist is an intelligent agricultural assistance platform purpose-built for Tanzanian smallholder farmers. It combines artificial intelligence, real-time weather data, and current market price information into a single, easy-to-use web application accessible from any smartphone or computer.
 
 ---
 
 **Utangulizi**
 
-Kilimo AI ni mfumo wa kisasa wa msaada wa kilimo ulioundwa mahususi kwa wakulima wadogo wa Tanzania. Mfumo huu unaunganisha akili ya bandia (AI), taarifa za hali ya hewa za wakati halisi, na bei za masoko za sasa katika programu moja rahisi ya kutumia inayofikiwa kupitia simu yoyote au kompyuta.
+NorZah Kilimo Smart assist ni mfumo wa kisasa wa msaada wa kilimo ulioundwa mahususi kwa wakulima wadogo wa Tanzania. Mfumo huu unaunganisha akili ya bandia (AI), taarifa za hali ya hewa za wakati halisi, na bei za masoko za sasa katika programu moja rahisi ya kutumia inayofikiwa kupitia simu yoyote au kompyuta.
 
-### Kilimo AI ni Nini?
+### NorZah Kilimo Smart assist ni Nini?
 
-Kilimo AI ni jukwaa la kidijitali linalomsaidia mkulima kupata taarifa za kilimo kwa haraka na kwa uhakika. Badala ya kutafuta ushauri wa mbali au kusubiri wataalamu, mkulima anaweza kuuliza maswali yake moja kwa moja kwenye mfumo na kupata majibu ya papo hapo katika lugha ya Kiswahili.
+NorZah Kilimo Smart assist ni jukwaa la kidijitali linalomsaidia mkulima kupata taarifa za kilimo kwa haraka na kwa uhakika. Badala ya kutafuta ushauri wa mbali au kusubiri wataalamu, mkulima anaweza kuuliza maswali yake moja kwa moja kwenye mfumo na kupata majibu ya papo hapo katika lugha ya Kiswahili.
 
 ### Mfumo Huu ni kwa Nani?
 
-Mfumo wa Kilimo AI umeundwa hasa kwa:
+Mfumo wa NorZah Kilimo Smart assist umeundwa hasa kwa:
 
 - **Wakulima wadogo** wa Tanzania wanaolima mazao kama mahindi, nyanya, mchele, maharage, na vitunguu.
 - **Wakulima wanaotaka kujua bei za masoko** kabla ya kuuza mazao yao.
@@ -66,17 +66,17 @@ Mfumo wa Kilimo AI umeundwa hasa kwa:
 
 **System Requirements**
 
-To use Kilimo AI, your device must meet the following minimum requirements.
+To use NorZah Kilimo Smart assist, your device must meet the following minimum requirements.
 
 ---
 
 **Mahitaji ya Mfumo**
 
-Ili kutumia Kilimo AI, kifaa chako kinahitaji kukidhi mahitaji yafuatayo ya chini.
+Ili kutumia NorZah Kilimo Smart assist, kifaa chako kinahitaji kukidhi mahitaji yafuatayo ya chini.
 
 ### Muunganiko wa Intaneti / Internet Connection
 
-Kilimo AI inahitaji muunganiko wa intaneti ili:
+NorZah Kilimo Smart assist inahitaji muunganiko wa intaneti ili:
 - Kupata majibu kutoka kwa msaidizi wa AI.
 - Kuonyesha bei za masoko za hivi karibuni.
 - Kupakua video za elimu ya kilimo.
@@ -86,7 +86,7 @@ Kilimo AI inahitaji muunganiko wa intaneti ili:
 
 ### Vivinjari Vinavyoungwa Mkono / Supported Browsers
 
-Mfumo wa Kilimo AI unafanya kazi vizuri kwenye vivinjari vifuatavyo:
+Mfumo wa NorZah Kilimo Smart assist unafanya kazi vizuri kwenye vivinjari vifuatavyo:
 
 | Kivinjari | Toleo la Chini | Msaada wa Programu |
 |-----------|---------------|-------------------|
@@ -100,7 +100,7 @@ Mfumo wa Kilimo AI unafanya kazi vizuri kwenye vivinjari vifuatavyo:
 
 ### Vifaa Vinavyoungwa Mkono / Supported Devices
 
-Kilimo AI inafanya kazi vizuri kwenye vifaa vifuatavyo:
+NorZah Kilimo Smart assist inafanya kazi vizuri kwenye vifaa vifuatavyo:
 
 - **Simu za Android**, Toleo la Android 8.0 au juu zaidi linapendekezwa.
 - **Simu za iPhone (iOS)**, Toleo la iOS 14 au juu zaidi linapendekezwa.
@@ -109,7 +109,7 @@ Kilimo AI inafanya kazi vizuri kwenye vifaa vifuatavyo:
 
 ### Sanikisha kama Programu / Install as App
 
-Kilimo AI inaweza kusanikiwa kama programu ya kawaida (Progressive Web App, PWA) kwenye:
+NorZah Kilimo Smart assist inaweza kusanikiwa kama programu ya kawaida (Progressive Web App, PWA) kwenye:
 
 - 📱 **Android**, kupitia Google Chrome
 - 🍎 **iOS/iPhone**, kupitia Apple Safari
@@ -134,7 +134,7 @@ Watumiaji wapya lazima waunde akaunti kabla ya kutumia mfumo. Kuna njia mbili za
 
 #### Njia ya 1: Barua Pepe na Nywila / Option 1: Email and Password
 
-1. Fungua tovuti ya Kilimo AI kwenye kivinjari chako.
+1. Fungua tovuti ya NorZah Kilimo Smart assist kwenye kivinjari chako.
 2. Bonyeza kitufe cha **"Jiandikishe"** kwenye ukurasa wa nyumbani.
 3. Ingiza **jina lako kamili** (Mfano: *Juma Mwalimu*).
 4. Ingiza **anwani yako ya barua pepe** (Mfano: *juma@gmail.com*).
@@ -143,7 +143,7 @@ Watumiaji wapya lazima waunde akaunti kabla ya kutumia mfumo. Kuna njia mbili za
    - Nambari (0–9)
    - Alama maalum (!@#$%)
 6. Bonyeza kitufe cha **"Unda Akaunti"**.
-7. Angalia kisanduku chako cha barua pepe kwa ujumbe wa uthibitisho kutoka Kilimo AI.
+7. Angalia kisanduku chako cha barua pepe kwa ujumbe wa uthibitisho kutoka NorZah Kilimo Smart assist.
 8. Bonyeza kiungo katika barua pepe hiyo ili kuthibitisha akaunti yako.
 9. Baada ya uthibitisho, utaelekezwa moja kwa moja kwenye dashibodi yako.
 
@@ -154,7 +154,7 @@ Watumiaji wapya lazima waunde akaunti kabla ya kutumia mfumo. Kuna njia mbili za
 1. Fungua ukurasa wa kujiandikisha.
 2. Bonyeza kitufe cha **"Endelea na Google"** (chenye rangi nyekundu, bluu, njano, na kijani).
 3. Chagua akaunti yako ya Google kutoka kwenye orodha.
-4. Ruhusu Kilimo AI kupata taarifa za msingi (jina na barua pepe) kwa kubonyeza **"Ruhusu / Allow"**.
+4. Ruhusu NorZah Kilimo Smart assist kupata taarifa za msingi (jina na barua pepe) kwa kubonyeza **"Ruhusu / Allow"**.
 5. Utaelekezwa moja kwa moja kwenye dashibodi, hakuna hatua zaidi za uthibitisho!
 
 ---
@@ -205,13 +205,13 @@ Ikiwa umesahau nywila yako:
 
 **Setting Up Your Profile**
 
-Completing your profile helps Kilimo AI personalise weather information and recommendations for your specific region.
+Completing your profile helps NorZah Kilimo Smart assist personalise weather information and recommendations for your specific region.
 
 ---
 
 **Kuweka Wasifu Wako**
 
-Kukamilisha wasifu wako kunasaidia Kilimo AI kubinafsisha taarifa za hali ya hewa na mapendekezo kwa mkoa wako maalum.
+Kukamilisha wasifu wako kunasaidia NorZah Kilimo Smart assist kubinafsisha taarifa za hali ya hewa na mapendekezo kwa mkoa wako maalum.
 
 #### Kuongeza Taarifa za Msingi
 
@@ -294,13 +294,13 @@ Dashibodi ina vitufe 4 vya haraka vinavyokupeleka moja kwa moja kwenye sehemu ku
 
 **AI Assistant**
 
-The AI Assistant is the core feature of Kilimo AI. It is powered by an advanced language model (Llama 3.1) via the Groq API, and is specifically configured to provide agricultural advice relevant to Tanzanian farming conditions.
+The AI Assistant is the core feature of NorZah Kilimo Smart assist. It is powered by an advanced language model (Llama 3.1) via the Groq API, and is specifically configured to provide agricultural advice relevant to Tanzanian farming conditions.
 
 ---
 
 **Msaidizi wa AI**
 
-Msaidizi wa AI ndio kipengele kikuu cha Kilimo AI. Unafanywa kazi na mfano wa lugha wa hali ya juu (Llama 3.1) kupitia API ya Groq, na umewekwa maalum kutoa ushauri wa kilimo unaohusiana na hali ya kilimo cha Tanzania.
+Msaidizi wa AI ndio kipengele kikuu cha NorZah Kilimo Smart assist. Unafanywa kazi na mfano wa lugha wa hali ya juu (Llama 3.1) kupitia API ya Groq, na umewekwa maalum kutoa ushauri wa kilimo unaohusiana na hali ya kilimo cha Tanzania.
 
 ### Jinsi ya Kuuliza Maswali
 
@@ -338,7 +338,7 @@ Hapa kuna mifano ya maswali unayoweza kuuliza msaidizi:
 
 ### Mada Zinazofunikwa na AI
 
-Msaidizi wa Kilimo AI anaweza kukusaidia kuhusu mada zifuatazo:
+Msaidizi wa NorZah Kilimo Smart assist anaweza kukusaidia kuhusu mada zifuatazo:
 
 - ✅ Kilimo cha mazao (kupanda, kutunza, kuvuna)
 - ✅ Magonjwa ya mazao na jinsi ya kuyatibu
@@ -351,7 +351,7 @@ Msaidizi wa Kilimo AI anaweza kukusaidia kuhusu mada zifuatazo:
 
 ### Mada Ambazo Ziko Nje ya Uwezo wa AI
 
-Msaidizi wa Kilimo AI **hatasaidia** kwenye mada zifuatazo (atakuelekezea kwenye mada za kilimo):
+Msaidizi wa NorZah Kilimo Smart assist **hatasaidia** kwenye mada zifuatazo (atakuelekezea kwenye mada za kilimo):
 
 - ❌ Siasa, michezo, au burudani
 - ❌ Maswali ya kisheria au ya kishieria
@@ -384,7 +384,7 @@ Sehemu ya Mazao inatoa taarifa za kina za kilimo kwa kila zao linaloungwa mkono,
 
 ### Mazao Yanayoungwa Mkono
 
-Mfumo wa Kilimo AI sasa una taarifa za kina za mazao yafuatayo:
+Mfumo wa NorZah Kilimo Smart assist sasa una taarifa za kina za mazao yafuatayo:
 
 | Zao | Jina la Kiingereza | Emoji |
 |-----|-------------------|-------|
@@ -442,7 +442,7 @@ Kila zao linaonyeshwa kwenye kadi yake mwenyewe iliyo na:
 
 ### Masoko Yanayofunikwa
 
-Kilimo AI inaonyesha bei kutoka masoko makuu 4 ya Tanzania:
+NorZah Kilimo Smart assist inaonyesha bei kutoka masoko makuu 4 ya Tanzania:
 
 | Soko | Mkoa |
 |------|------|
@@ -560,45 +560,45 @@ Hatua za kufuta akaunti:
 
 **Installing the App**
 
-Kilimo AI is a Progressive Web App (PWA), which means it can be installed directly from your browser, no App Store or Play Store required.
+NorZah Kilimo Smart assist is a Progressive Web App (PWA), which means it can be installed directly from your browser, no App Store or Play Store required.
 
 ---
 
 **Kusanikisha Programu**
 
-Kilimo AI ni Programu Huru ya Wavuti (Progressive Web App, PWA), ikimaanisha inaweza kusanikiwa moja kwa moja kutoka kwenye kivinjari chako, bila hitaji la Duka la Programu.
+NorZah Kilimo Smart assist ni Programu Huru ya Wavuti (Progressive Web App, PWA), ikimaanisha inaweza kusanikiwa moja kwa moja kutoka kwenye kivinjari chako, bila hitaji la Duka la Programu.
 
 ### Kwa Simu za Android (Google Chrome)
 
 1. Fungua **Google Chrome** kwenye simu yako ya Android.
-2. Nenda kwenye tovuti ya Kilimo AI.
+2. Nenda kwenye tovuti ya NorZah Kilimo Smart assist.
 3. Ingia kwa akaunti yako.
-4. Utaona **ujumbe wa kufunguka chini ya skrini** ukisema "Ongeza Kilimo AI kwenye skrini yako ya nyumbani", bonyeza **"Sanikisha"** au **"Install"**.
+4. Utaona **ujumbe wa kufunguka chini ya skrini** ukisema "Ongeza NorZah Kilimo Smart assist kwenye skrini yako ya nyumbani", bonyeza **"Sanikisha"** au **"Install"**.
    - Ikiwa ujumbe hauonekani, bonyeza **vipande vitatu vya menyu** (⋮) juu kulia → chagua **"Ongeza kwenye skrini ya nyumbani"**.
 5. Thibitisha kusanikisha kwa kubonyeza **"Ongeza"**.
-6. Ikoni ya Kilimo AI itaonekana kwenye skrini yako ya nyumbani kama programu ya kawaida.
-7. Sasa unaweza kufungua Kilimo AI moja kwa moja bila kuhitaji kivinjari.
+6. Ikoni ya NorZah Kilimo Smart assist itaonekana kwenye skrini yako ya nyumbani kama programu ya kawaida.
+7. Sasa unaweza kufungua NorZah Kilimo Smart assist moja kwa moja bila kuhitaji kivinjari.
 
 ### Kwa Simu za iPhone/iPad (Apple Safari)
 
 1. Fungua **Safari** kwenye iPhone au iPad yako.
-2. Nenda kwenye tovuti ya Kilimo AI.
+2. Nenda kwenye tovuti ya NorZah Kilimo Smart assist.
 3. Ingia kwa akaunti yako.
 4. Bonyeza aikoni ya **Shiriki** (sanduku lenye mshale unaotoka juu) chini ya skrini.
 5. Tembeza orodha chini hadi uone **"Ongeza kwenye Skrini ya Nyumbani" (Add to Home Screen)**.
 6. Bonyeza chaguo hilo.
-7. Badilisha jina ikiwa unataka (au acha "Kilimo AI").
+7. Badilisha jina ikiwa unataka (au acha "NorZah Kilimo Smart assist").
 8. Bonyeza **"Ongeza"** juu kulia.
-9. Ikoni ya Kilimo AI itaonekana kwenye skrini yako ya nyumbani.
+9. Ikoni ya NorZah Kilimo Smart assist itaonekana kwenye skrini yako ya nyumbani.
 
-### Kutumia Nambari ya QR kupata Kilimo AI
+### Kutumia Nambari ya QR kupata NorZah Kilimo Smart assist
 
-Ikiwa unataka kushiriki Kilimo AI na wengine au kufikia haraka kwa simu nyingine:
+Ikiwa unataka kushiriki NorZah Kilimo Smart assist na wengine au kufikia haraka kwa simu nyingine:
 
 1. Nenda kwenye ukurasa wa **QR Code** (link inapatikana kwenye menyu).
 2. Nambari ya QR itaonekana kwenye skrini.
 3. Skani nambari ya QR kwa simu yoyote yenye kamera.
-4. Simu itafungua tovuti ya Kilimo AI moja kwa moja.
+4. Simu itafungua tovuti ya NorZah Kilimo Smart assist moja kwa moja.
 
 ---
 
@@ -662,7 +662,7 @@ Sehemu hii inashughulikia matatizo ya kawaida ambayo watumiaji hukutana nayo na 
 |--|--|
 | **Tatizo** | Chaguo la "Ongeza kwenye Skrini ya Nyumbani" halionekani. |
 | **Sababu** | Unatumia kivinjari ambacho hakioakuunga mkono PWA, au tayari umesanikisha programu. |
-| **Suluhisho** | 1. Angalia unatumia **Chrome** (Android) au **Safari** (iOS). 2. Ikiwa hutumii Chrome (Android), sakinisha Chrome kwanza. 3. Ikiwa tayari umesanikisha, angalia skrini yako ya nyumbani kwa ikoni ya Kilimo AI. |
+| **Suluhisho** | 1. Angalia unatumia **Chrome** (Android) au **Safari** (iOS). 2. Ikiwa hutumii Chrome (Android), sakinisha Chrome kwanza. 3. Ikiwa tayari umesanikisha, angalia skrini yako ya nyumbani kwa ikoni ya NorZah Kilimo Smart assist. |
 
 ---
 
@@ -670,17 +670,17 @@ Sehemu hii inashughulikia matatizo ya kawaida ambayo watumiaji hukutana nayo na 
 
 **Privacy & Security**
 
-Kilimo AI is committed to protecting your personal data and farming information.
+NorZah Kilimo Smart assist is committed to protecting your personal data and farming information.
 
 ---
 
 **Faragha na Usalama**
 
-Kilimo AI inajitolea kulinda data yako ya kibinafsi na taarifa za kilimo.
+NorZah Kilimo Smart assist inajitolea kulinda data yako ya kibinafsi na taarifa za kilimo.
 
 ### Data Inayokusanywa
 
-Kilimo AI inakusanya taarifa zifuatazo unapojiandikisha na kutumia mfumo:
+NorZah Kilimo Smart assist inakusanya taarifa zifuatazo unapojiandikisha na kutumia mfumo:
 
 | Aina ya Data | Kwa Nini? |
 |--------------|-----------|
@@ -693,7 +693,7 @@ Kilimo AI inakusanya taarifa zifuatazo unapojiandikisha na kutumia mfumo:
 
 ### Jinsi Data Inavyohifadhiwa
 
-Data yote ya Kilimo AI inahifadhiwa kwenye **Supabase**, jukwaa la hifadhidata la kisasa lenye usalama wa kiwango cha biashara:
+Data yote ya NorZah Kilimo Smart assist inahifadhiwa kwenye **Supabase**, jukwaa la hifadhidata la kisasa lenye usalama wa kiwango cha biashara:
 
 - **Usimbaji (Encryption):** Data yote imesimbwa wakati wa kusafiri (HTTPS/TLS) na wakati wa kuhifadhiwa.
 - **Udhibiti wa Ufikiaji (Row Level Security):** Kila mtumiaji anaweza kuona na kuhariri data yake mwenyewe tu.
@@ -702,7 +702,7 @@ Data yote ya Kilimo AI inahifadhiwa kwenye **Supabase**, jukwaa la hifadhidata l
 
 ### Haki za Mtumiaji
 
-Kama mtumiaji wa Kilimo AI, una haki zifuatazo:
+Kama mtumiaji wa NorZah Kilimo Smart assist, una haki zifuatazo:
 
 1. **Haki ya Kuona:** Unaweza kuangalia data yako yote kwenye ukurasa wa Wasifu.
 2. **Haki ya Kuhariri:** Unaweza kubadilisha taarifa zako wakati wowote.
@@ -720,7 +720,7 @@ Vidokezo vya kulinda akaunti yako:
 
 ---
 
-*Mwongozo huu uliandaliwa Mei 2026 kwa ajili ya toleo la 1.0 la Kilimo AI.*  
-*This guide was prepared in May 2026 for Kilimo AI version 1.0.*
+*Mwongozo huu uliandaliwa Mei 2026 kwa ajili ya toleo la 1.0 la NorZah Kilimo Smart assist.*  
+*This guide was prepared in May 2026 for NorZah Kilimo Smart assist version 1.0.*
 
-*© 2026 Kilimo AI, Mradi wa Mwisho wa Chuo Kikuu / University Final Year Project*
+*© 2026 NorZah Kilimo Smart assist, Mradi wa Mwisho wa Chuo Kikuu / University Final Year Project*

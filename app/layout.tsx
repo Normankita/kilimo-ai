@@ -5,7 +5,7 @@ import InstallPrompt from '@/components/ui/install-prompt'
 import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
-  let appName = 'Kilimo AI'
+  let appName = 'NorZah Kilimo Smart assist'
   try {
     // site_settings is publicly readable and this doesn't need a user session,
     // so a plain cookie-free client is used here deliberately — the cookie-bound
